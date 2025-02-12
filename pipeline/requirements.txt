@@ -1,0 +1,11 @@
+transformers
+datasets
+torch
+faiss-cpu
+sentence-transformers
+langchain
+llama-index
+langchain-community
+langchain_groq
+langchain-huggingface
+gradio
