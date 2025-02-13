@@ -1,9 +1,9 @@
 {
     "file_name":"data/en_refine.json",
     "result_path": "results/",
-    "models": ["llama3-8b-8192", "mixtral-8x7b-32768", "gemma2-9b-it", "deepseek-r1-distill-llama-70b", "whisper-large-v3"],
-    "model_name":"llama3-8b-8192",
-    "noise_rate": 1.0,
+    "models": ["llama3-8b-8192", "mixtral-8x7b-32768", "gemma2-9b-it", "deepseek-r1-distill-llama-70b", "whisper-large-v3", "`qwen-2.5-32b`"],
+    "model_name":"mixtral-8x7b-32768",
+    "noise_rate": 0.2,
     "passage_num": 5,
     "num_queries": 50,
     "retry_attempts": 3,

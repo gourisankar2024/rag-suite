@@ -85,8 +85,6 @@ def evaluate_noise_robustness(dataset, config):
     tt = sum(1 for i in results if (noise_rate == 1 and i['label'][0] == -1) or (0 not in i['label'] and 1 in i['label']))
     all_rate = tt / len(results) if results else 0
 
-    
-
     # Save the final score file with tt and all_rate
     scores = {
         'model': config["model_name"],

@@ -1,5 +1,6 @@
 import json
 import logging
+from app import launch_gradio_app
 from scripts.evaluate_factual_robustness import evaluate_factual_robustness
 from scripts.evaluate_negative_rejection import evaluate_negative_rejection
 from scripts.evaluate_noise_robustness import evaluate_noise_robustness
@@ -38,9 +39,10 @@ def main():
     logging.info(f"Loaded {len(dataset)} entries")  # Check how many records were loaded
 
     # Call evaluate_noise_robustness for each noise rate and model
-    evaluate_noise_robustness(dataset, config)
-    evaluate_negative_rejection(config)
-    evaluate_factual_robustness(config)
+    #evaluate_noise_robustness(dataset, config)
+    #evaluate_negative_rejection(config)
+    #evaluate_factual_robustness(config)
+    launch_gradio_app(dataset, config)
     
 if __name__ == "__main__":
     main()
