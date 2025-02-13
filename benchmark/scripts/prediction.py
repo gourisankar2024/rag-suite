@@ -1,4 +1,3 @@
-import numpy as np
 
 # Check if the predicted answer matches the ground truth
 def check_answer(prediction, ground_truth):
@@ -27,7 +26,7 @@ def get_evaluation(results):
     return 0 not in results
 
 # Generate prediction based on query, documents, and model
-def predict(query, ground_truth, docs, model, instruction, temperature, dataset):
+def predict(query, ground_truth, docs, model, instruction, temperature):
     '''
     label: 0 for positive, 1 for negative, -1 for not enough information
     '''

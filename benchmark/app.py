@@ -41,7 +41,7 @@ def load_noise_robustness_scores():
         {
             "Noise Ratio": model,
             **{
-                rate: f"{score_data.get((model, rate), 'N/A') * 100:.2f}%" 
+                rate: f"{score_data.get((model, rate), 'N/A') * 100:.2f}" 
                 if score_data.get((model, rate), "N/A") != "N/A" 
                 else "N/A"
                 for rate in sorted(noise_rates, key=float)
@@ -80,8 +80,7 @@ def load_negative_rejection_scores():
 
 def load_counterfactual_robustness_scores():
     models = set()
-    noise_rates = set()
-    
+
     if not os.path.exists(Counterfactual_Robustness_DIR):
         return pd.DataFrame(columns=["Noise Ratio"])
 
@@ -94,106 +93,113 @@ def load_counterfactual_robustness_scores():
             with open(filepath, "r") as f:
                 score = json.load(f)
                 model = filename.split("_")[1]
-                noise_rate = str(score["noise_rate"])
+                #noise_rate = str(score["noise_rate"])
 
                 models.add(model)
-                noise_rates.add(noise_rate)
-
-                score_data[(model, noise_rate)] = score["reject_rate"]
+                score_data[model] = {
+                    "Accuracy (%)": int(score["all_rate"] * 100),  # No decimal
+                    "Error Detection Rate": int(score["reject_rate"] * 10),  
+                    "Correction Rate (%)": round(score["correct_rate"] * 100, 2)  # 2 decimal places
+                }
 
     # Convert to DataFrame
     df = pd.DataFrame([
-        {
-            "Noise Ratio": model,
-            **{
-                rate: f"{score_data.get((model, rate), 'N/A') * 100:.2f}%" 
-                if score_data.get((model, rate), "N/A") != "N/A" 
-                else "N/A"
-                for rate in sorted(noise_rates, key=float)
-            }
-        }
+         {
+            "Model": model,
+            "Accuracy (%)": score_data.get(model, {}).get("Accuracy (%)", "N/A"),
+            "Error Detection Rate": score_data.get(model, {}).get("Error Detection Rate", "N/A"),
+            "Correction Rate (%)": f"{score_data.get(model, {}).get('Correction Rate (%)', 'N/A'):.2f}"
+        }   
         for model in sorted(models)
     ])
 
     return df
 
 # Gradio UI
-def launch_gradio_app(dataset, config):
+def launch_gradio_app(config):
     with gr.Blocks() as app:
-        gr.Markdown("# RAG System Evaluation on RGB Dataset #")
+        app.title = "RAG System Evaluation"
+        gr.Markdown("# RAG System Evaluation on RGB Dataset")
+
+        # Top Section - Inputs and Controls
+        with gr.Row():
+            model_name_input = gr.Dropdown(
+            label="Model Name",
+            choices= config["models"],
+            value="llama3-8b-8192",
+            interactive=True
+            )
+            noise_rate_input = gr.Slider(label="Noise Rate", minimum=0, maximum=1.0, step=0.2, value=0.2, interactive=True)
+            num_queries_input = gr.Number(label="Number of Queries", value=50, interactive=True)
+
+        # Bottom Section - Action Buttons
+        with gr.Row():
+            recalculate_noise_btn = gr.Button("Evaluate Noise Robustness")
+            recalculate_negative_btn = gr.Button("Evaluate Negative Rejection")
+            recalculate_counterfactual_btn = gr.Button("Evaluate Counterfactual Robustness")
+            recalculate_integration_btn = gr.Button("Evaluate Integration Information")
 
         with gr.Row():
+            refresh_btn = gr.Button("Refresh", variant="primary", scale = 0)
+
+        # Middle Section - Data Tables
+        with gr.Row():
             with gr.Column():
-                gr.Markdown("### Noise Robustness")
+                gr.Markdown("### 📊 Noise Robustness\n**Description:** The experimental result of noise robustness measured by accuracy (%) under different noise ratios. Result show that the increasing noise rate poses a challenge for RAG in LLMs.")
                 noise_table = gr.Dataframe(value=load_noise_robustness_scores(), interactive=False)
-
             with gr.Column():
-                gr.Markdown("### Negative Rejection")
+                gr.Markdown("### 🚫 Negative Rejection\n**Description:** This measures the model's ability to reject invalid or nonsensical queries instead of generating incorrect responses. A higher rejection rate means the model is better at filtering unreliable inputs.")
                 rejection_table = gr.Dataframe(value=load_negative_rejection_scores(), interactive=False)
+
         with gr.Row():
             with gr.Column():
-                gr.Markdown("### Counterfactual Robustness")
+                gr.Markdown("""
+                    ### 🔄 Counterfactual Robustness  
+                    **Description:**  
+                    Counterfactual Robustness evaluates a model's ability to handle **errors in external knowledge** while ensuring reliable responses.  
+
+                    **Key Metrics in this Report:**  
+                    - **Accuracy (%)** → Measures the accuracy (%) of LLMs with counterfactual documents.  
+                    - **Error Detection Rate (%)** → Measures how often the model **rejects** incorrect or misleading queries instead of responding.  
+                    - **Correct Rate (%)** → Measures how often the model provides accurate responses despite **potential misinformation**.  
+                    """)
                 counter_factual_table = gr.Dataframe(value=load_counterfactual_robustness_scores(), interactive=False)
-
             with gr.Column():
-                gr.Markdown("### Information Integration")
-                #rejection_table = gr.Dataframe(value=load_negative_rejection_scores(), interactive=False)
+                gr.Markdown("### 🧠 Information Integration\n**Description:** This evaluates the model's ability to **combine multiple pieces of information** to generate a coherent response. A higher integration score indicates better reasoning and synthesis across diverse inputs.")
+                integration_table = gr.Dataframe(value=pd.DataFrame(columns=["Model", "Integration Score"]), interactive=False)
+        
 
+        # Refresh Scores Function
         def refresh_scores():
             return load_noise_robustness_scores(), load_negative_rejection_scores(), load_counterfactual_robustness_scores()
 
-        with gr.Row():
-            refresh_btn = gr.Button("Refresh", scale=0)
         refresh_btn.click(refresh_scores, outputs=[noise_table, rejection_table, counter_factual_table])
 
-        # Inputs for Config Update
-        with gr.Row():
-            model_name_input = gr.Textbox(label="Model Name", value="llama3-8b-8192", interactive=True, scale=1)
-            noise_rate_input = gr.Slider(label="Noise Rate", minimum=0, maximum=1.0, step=0.2, value=0.2, interactive=True, scale=1)
-            num_queries_input = gr.Number(label="Number of Queries", value=50, interactive=True, scale=1)
-
-        with gr.Row():
-            recalculate_noise_robustness_btn = gr.Button("Noise Robustness", min_width=None)
-            recalculate_negative_rejection_btn = gr.Button("Negative Rejection", min_width=None)
-            recalculate_counter_factual_btn = gr.Button("Counter Factual", min_width=None)
-            recalculate_counter_factual_btn = gr.Button("Integration Information", min_width=None)
-
-        # Button to trigger noise robustness(config)
+        # Button Functions
         def recalculate_noise_robustness(model_name, noise_rate, num_queries):
-            # Update config with user-provided values
             update_config(config, model_name, noise_rate, num_queries)
-            evaluate_noise_robustness(dataset, config)
-            return load_noise_robustness_scores()  # Reload scores after recalculating
+            evaluate_noise_robustness(config)
+            return load_noise_robustness_scores()
         
-        recalculate_noise_robustness_btn.click(
-            recalculate_noise_robustness,
-            inputs=[model_name_input, noise_rate_input, num_queries_input],
-            outputs=[noise_table]
-        )
+        recalculate_noise_btn.click(recalculate_noise_robustness, inputs=[model_name_input, noise_rate_input, num_queries_input], outputs=[noise_table])
 
-        # Button to trigger evaluate_factual_robustness(config)
-        def recalculate_counter_factual(model_name, noise_rate, num_queries):
-            # Update config with user-provided values
+        def recalculate_counterfactual_robustness(model_name, noise_rate, num_queries):
             update_config(config, model_name, noise_rate, num_queries)
             evaluate_factual_robustness(config)
-            return load_counterfactual_robustness_scores()  # Reload scores after recalculating
+            return load_counterfactual_robustness_scores()
         
-        recalculate_counter_factual_btn.click(
-            recalculate_counter_factual,
-            inputs=[model_name_input, noise_rate_input, num_queries_input],
-            outputs=[counter_factual_table]
-        )
-        
-        # Button to trigger evaluate_factual_robustness(config)
+        recalculate_counterfactual_btn.click(recalculate_counterfactual_robustness, inputs=[model_name_input, noise_rate_input, num_queries_input], outputs=[counter_factual_table])
+
         def recalculate_negative_rejection(model_name, noise_rate, num_queries):
-            # Update config with user-provided values
             update_config(config, model_name, noise_rate, num_queries)
             evaluate_negative_rejection(config)
-            return load_negative_rejection_scores()  # Reload scores after recalculating
+            return load_negative_rejection_scores()
         
-        recalculate_negative_rejection_btn.click(
-            recalculate_negative_rejection,
-            inputs=[model_name_input, noise_rate_input, num_queries_input],
-            outputs=[rejection_table]
-        )
+        recalculate_negative_btn.click(recalculate_negative_rejection, inputs=[model_name_input, noise_rate_input, num_queries_input], outputs=[rejection_table])
+
+        def recalculate_integration_info():
+            return pd.DataFrame(columns=["Model", "Integration Score"])  # Placeholder
+        
+        recalculate_integration_btn.click(recalculate_integration_info, outputs=[integration_table])
+
     app.launch()

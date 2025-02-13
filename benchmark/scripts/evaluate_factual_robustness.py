@@ -2,13 +2,14 @@ import json
 import tqdm
 from pathlib import Path
 import logging
+from scripts.get_factual_evaluation import get_factual_evaluation
 from scripts.groq_client import GroqClient
 from scripts.helper import adaptive_delay, ensure_directory_exists
 from scripts.prompt import get_factual_prompt
 
 def evaluate_factual_robustness(config):
     """Evaluates negative rejection for a given model by processing predictions and computing scores."""
-    
+    config["noise_rate"] = 0.4 # Time being to do clarification
     modelname = config["model_name"]
     noise_rate = config["noise_rate"]
     passage_num = config["passage_num"]
@@ -20,20 +21,21 @@ def evaluate_factual_robustness(config):
         return
 
     # File paths
-    base_path = "results"
-    evalue_file = f"{base_path}/Noise Robustness/prediction_{modelname}_noise_{noise_rate}_passage_{passage_num}.json"
-    output_file = f"{base_path}/Counterfactual Robustness/output_{modelname}_noise_{noise_rate}_passage_{passage_num}.json"
-    result_file = f"{base_path}/Counterfactual Robustness/scores_{modelname}_noise_{noise_rate}_passage_{passage_num}.json"
+    base_path = "results/Counterfactual Robustness"
+    evalue_file = get_factual_evaluation(config) #f"{base_path}/prediction_{modelname}_noise_{noise_rate}_passage_{passage_num}.json"
+    print(f"Factual pred file {evalue_file}")
+    output_file = f"{base_path}/output_{modelname}_noise_{noise_rate}_passage_{passage_num}.json"
+    result_file = f"{base_path}/scores_{modelname}_noise_{noise_rate}_passage_{passage_num}.json"
     ensure_directory_exists(output_file)
     
     def load_used_data(filepath):
         """Loads existing processed data to avoid redundant evaluations."""
         used_data = {}
-        if Path(filepath).exists():
+        '''if Path(filepath).exists():
             with open(filepath, encoding='utf-8') as f:
                 for line in f:
                     data = json.loads(line)
-                    used_data[data['id']] = data
+                    used_data[data['id']] = data'''
         return used_data
 
     def process_query(model, data, used_data, output_file):
@@ -97,6 +99,7 @@ def evaluate_factual_robustness(config):
                 results.append(processed_data)
 
     # Compute scores and save
+    #print(results)
     scores = calculate_scores(results, config)
     print(f"Score: {scores}")
 

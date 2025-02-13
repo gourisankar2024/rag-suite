@@ -31,18 +31,13 @@ def main():
         download_file(file)
 
     # Load dataset from the local JSON file
-    dataset = []
-    with open(config["file_name"], "r", encoding="utf-8") as f:
-        for line in f:
-            dataset.append(json.loads(line.strip()))  # Load each JSON object per line
-
-    logging.info(f"Loaded {len(dataset)} entries")  # Check how many records were loaded
+    
 
     # Call evaluate_noise_robustness for each noise rate and model
-    #evaluate_noise_robustness(dataset, config)
+    #evaluate_noise_robustness(config)
     #evaluate_negative_rejection(config)
     #evaluate_factual_robustness(config)
-    launch_gradio_app(dataset, config)
+    launch_gradio_app(config)
     
 if __name__ == "__main__":
     main()

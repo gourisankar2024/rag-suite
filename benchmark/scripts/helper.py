@@ -1,3 +1,4 @@
+import json
 import os
 import time
 import logging
@@ -36,3 +37,11 @@ def update_config(config, model_name=None, noise_rate=None, num_queries=None):
     if num_queries is not None:  # Explicitly check for None to handle 0
         config["num_queries"] = int(num_queries)  # Ensure it's an integer
     return config
+
+def load_dataset(file_name):
+    dataset = []
+    with open('data/' + file_name, "r", encoding="utf-8") as f:
+        for line in f:
+            dataset.append(json.loads(line.strip()))  # Load each JSON object per line
+    logging.info(f"Loaded {len(dataset)} entries from file {file_name}")  # Check how many records were loaded
+    return dataset

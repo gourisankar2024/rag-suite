@@ -3,14 +3,15 @@ import random
 import math
 
 def process_data(instance, noise_rate, passage_num, filename, correct_rate=0):
+    print(filename)
     """Process the data for generating a noisy document set."""
     query = instance['query']
     ans = instance['answer']
-
+    logging.info(f"Query: {query}")
+    logging.info(f"Answer: {ans}")
+    
     neg_num = math.ceil(passage_num * noise_rate)
     pos_num = passage_num - neg_num
-    logging.info(f"Using {pos_num} positive and {neg_num} negative documents for noise rate {noise_rate}")
-
     docs = []
     
     # Handling the '_int' case in filename
@@ -62,16 +63,11 @@ def process_data(instance, noise_rate, passage_num, filename, correct_rate=0):
         negative = instance['negative'][:neg_num]
 
         docs = positive + negative
-
+        # Count the positive and negative documents
+        num_positive = sum(1 for doc in docs if doc in positive)
+        num_negative = sum(1 for doc in docs if doc in negative)
+        logging.info(f"Using {num_positive} positive and {num_negative} negative documents as context")
+    
     # Shuffle the final document list
     random.shuffle(docs)
-    
-    # Count the positive and negative documents
-    num_positive = sum(1 for doc in docs if doc in positive)
-    num_negative = sum(1 for doc in docs if doc in negative)
-
-    logging.info(f"Query: {query}")
-    logging.info(f"Answer: {ans}")
-    logging.info(f"Using {num_positive} positive and {num_negative} negative documents as context")
-
     return query, ans, docs
