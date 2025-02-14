@@ -10,12 +10,13 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 # Improved function to evaluate noise robustness
 def get_factual_evaluation(config):
-    result_path = config["result_path"] + 'Counterfactual Robustness/'
+    result_path = config['result_path'] + 'Counterfactual Robustness/'
     noise_rate = config['noise_rate']
     passage_num = config['passage_num']
+    model_name = config['model_name']
 
     # Iterate over each model specified in the config
-    filename = os.path.join(result_path, f'prediction_{config['model_name']}_noise_{noise_rate}_passage_{passage_num}.json')
+    filename = os.path.join(result_path, f'prediction_{model_name}_noise_{noise_rate}_passage_{passage_num}.json')
     ensure_directory_exists(filename)
 
     # Load existing results if file exists
@@ -28,7 +29,7 @@ def get_factual_evaluation(config):
                 data = json.loads(line)
                 useddata[data['id']] = data'''
 
-    results = get_prediction_result(config, config["factual_file_name"])  # Store results for this model
+    results = get_prediction_result(config, config['factual_file_name'])  # Store results for this model
 
     # Save results to a file
     with open(filename, 'w', encoding='utf-8') as f:
@@ -61,7 +62,7 @@ def get_factual_evaluation(config):
     scores['correct_tt'] = correct_tt
 
     #logging.info(f"score: {scores}")
-    score_filename = os.path.join(result_path, f'scores_{config['model_name']}_noise_{noise_rate}_passage_{passage_num}.json')
+    score_filename = os.path.join(result_path, f'scores_{model_name}_noise_{noise_rate}_passage_{passage_num}.json')
     with open(score_filename, 'w') as f:
         json.dump(scores, f, ensure_ascii=False, indent=4)
 

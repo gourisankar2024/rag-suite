@@ -15,10 +15,10 @@ def evaluate_negative_rejection(config):
     noise_rate = config['noise_rate']
     passage_num = config['passage_num']
     
-    if config['model_name'] in config["models"]:
-        model = GroqClient(plm=config['model_name'])
+    if modelname in config['models']:
+        model = GroqClient(plm=modelname)
     else:
-        logging.warning(f"Skipping unknown model: {config['model_name']}")
+        logging.warning(f"Skipping unknown model: {modelname}")
         return
 
     # File paths

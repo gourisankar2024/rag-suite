@@ -12,21 +12,23 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 def get_prediction_result(config, data_file_name):
     results = []
     dataset = load_dataset(data_file_name)
+    modelname = config['model_name']
+
     # Create GroqClient instance for supported models
-    if config['model_name'] in config["models"]:
-        model = GroqClient(plm=config['model_name'])
+    if modelname in config['models']:
+        model = GroqClient(plm=modelname)
     else:
-        logging.warning(f"Skipping unknown model: {config['model_name']}")
+        logging.warning(f"Skipping unknown model: {modelname}")
         return
     
     # Iterate through dataset and process queries
     for idx, instance in enumerate(dataset[:config['num_queries']], start=0):
-        logging.info(f"Executing Query {idx + 1} for Model: {config['model_name']}")
+        logging.info(f"Executing Query {idx + 1} for Model: {modelname}")
 
         query, ans, docs = process_data(instance, config['noise_rate'], config['passage_num'], data_file_name)
 
         # Retry mechanism for prediction
-        for attempt in range(1, config["retry_attempts"] + 1):
+        for attempt in range(1, config['retry_attempts'] + 1):
             label, prediction, factlabel = predict(query, ans, docs, model, "Document:\n{DOCS} \n\nQuestion:\n{QUERY}", 0.7)
             if prediction:  # If response is not empty, break retry loop
                 break
