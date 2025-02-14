@@ -178,9 +178,6 @@ def launch_gradio_app(config):
         
         # Section to display logs
         with gr.Row():
-            start_log_button = gr.Button("View logs", elem_id="start_btn", variant="primary", scale = 0)  # Button remains but isn't required
-            
-        with gr.Row():
             log_section = gr.Textbox(label="Logs", interactive=False, visible=True, lines=10 , every=2)  # Log section
 
         #logs_state = gr.State(get_logs())  # Store logs state
@@ -188,9 +185,6 @@ def launch_gradio_app(config):
         # Update UI when logs_state changes
         app.queue() 
         app.load(update_logs_periodically, outputs=log_section)
-
-        # Optional: Keep button for manual log refresh
-        start_log_button.click(fn=get_logs, outputs=log_section)
 
         # Refresh Scores Function
         def refresh_scores():
