@@ -19,7 +19,7 @@ def retrieve_and_generate_response(gen_llm, vector_store, query):
     # Step 2: Generate a response using LLM
     response, source_docs = generate_response(gen_llm, vector_store, query, relevant_docs)
 
-    logging.info(f"Response from LLM: {response}")
+    logging.info(f"Response from LLM ({gen_llm.name}): {response}")
 
     return response, source_docs
 
