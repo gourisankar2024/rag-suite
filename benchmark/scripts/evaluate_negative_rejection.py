@@ -1,14 +1,16 @@
 import json
+import os
 import tqdm
 from pathlib import Path
 import logging
+from scripts.evaluate_noise_robustness import evaluate_noise_robustness
 from scripts.groq_client import GroqClient
 from scripts.helper import adaptive_delay, ensure_directory_exists
 from scripts.prompt import get_prompt
 
 def evaluate_negative_rejection(config):
     """Evaluates negative rejection for a given model by processing predictions and computing scores."""
-    
+    config["noise_rate"] = 1.0 # Noise rate should be 1.0 for negative rejection evaluation
     modelname = config["model_name"]
     noise_rate = config["noise_rate"]
     passage_num = config["passage_num"]
@@ -24,7 +26,13 @@ def evaluate_negative_rejection(config):
     evalue_file = f"{base_path}/Noise Robustness/prediction_{modelname}_noise_{noise_rate}_passage_{passage_num}.json"
     output_file = f"{base_path}/Negative Rejection/output_{modelname}_noise_{noise_rate}_passage_{passage_num}.json"
     result_file = f"{base_path}/Negative Rejection/scores_{modelname}_noise_{noise_rate}_passage_{passage_num}.json"
-    ensure_directory_exists(output_file)
+    
+    #ensure_directory_exists(output_file)
+    directory = os.path.dirname(evalue_file)
+    if not os.path.exists(directory):
+        logging.info(f"Evaluation file does not exist for model{modelname} and noise rate {noise_rate}.")
+        logging.info("Generating evaluation file")
+        evaluate_noise_robustness(config)
     
     def load_used_data(filepath):
         """Loads existing processed data to avoid redundant evaluations."""
@@ -75,7 +83,7 @@ def evaluate_negative_rejection(config):
             'nums': total,
         }
 
-    used_data = load_used_data(output_file)
+    used_data = []#load_used_data(output_file)
     results = []
 
     with open(output_file, 'w', encoding='utf-8') as f_out, open(evalue_file, 'r', encoding='utf-8') as f_eval:

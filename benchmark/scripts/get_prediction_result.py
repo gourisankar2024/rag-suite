@@ -34,7 +34,7 @@ def get_prediction_result(config, data_file_name):
 
         # Check correctness and log the result
         is_correct = all(x == 1 for x in label)  # True if all values are 1 (correct), else False
-        #logging.info(f"Model Response: {prediction}")
+        logging.info(f"Model Response: {prediction}")
         logging.info(f"Correctness: {is_correct}")
 
         # Save result for this query

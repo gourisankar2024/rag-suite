@@ -2,6 +2,7 @@ import gradio as gr
 import os
 import json
 import pandas as pd
+from scripts.evaluate_information_integration import evaluate_information_integration
 from scripts.evaluate_negative_rejection import evaluate_negative_rejection
 from scripts.helper import update_config
 from scripts.evaluate_noise_robustness import evaluate_noise_robustness
@@ -11,21 +12,22 @@ from scripts.evaluate_factual_robustness import evaluate_factual_robustness
 Noise_Robustness_DIR = "results/Noise Robustness/"
 Negative_Rejection_DIR = "results/Negative Rejection/"
 Counterfactual_Robustness_DIR = "results/Counterfactual Robustness/"
+Infomration_Integration_DIR = "results/Information Integration/"
 
 # Function to read and aggregate score data
-def load_noise_robustness_scores():
+def load_scores(file_dir):
     models = set()
     noise_rates = set()
     
-    if not os.path.exists(Noise_Robustness_DIR):
+    if not os.path.exists(file_dir):
         return pd.DataFrame(columns=["Noise Ratio"])
 
     score_data = {}
 
     # Read all JSON score files
-    for filename in os.listdir(Noise_Robustness_DIR):
+    for filename in os.listdir(file_dir):
         if filename.startswith("scores_") and filename.endswith(".json"):
-            filepath = os.path.join(Noise_Robustness_DIR, filename)
+            filepath = os.path.join(file_dir, filename)
             with open(filepath, "r") as f:
                 score = json.load(f)
                 model = score["model"]
@@ -146,7 +148,7 @@ def launch_gradio_app(config):
         with gr.Row():
             with gr.Column():
                 gr.Markdown("### 📊 Noise Robustness\n**Description:** The experimental result of noise robustness measured by accuracy (%) under different noise ratios. Result show that the increasing noise rate poses a challenge for RAG in LLMs.")
-                noise_table = gr.Dataframe(value=load_noise_robustness_scores(), interactive=False)
+                noise_table = gr.Dataframe(value=load_scores(Noise_Robustness_DIR), interactive=False)
             with gr.Column():
                 gr.Markdown("### 🚫 Negative Rejection\n**Description:** This measures the model's ability to reject invalid or nonsensical queries instead of generating incorrect responses. A higher rejection rate means the model is better at filtering unreliable inputs.")
                 rejection_table = gr.Dataframe(value=load_negative_rejection_scores(), interactive=False)
@@ -165,21 +167,21 @@ def launch_gradio_app(config):
                     """)
                 counter_factual_table = gr.Dataframe(value=load_counterfactual_robustness_scores(), interactive=False)
             with gr.Column():
-                gr.Markdown("### 🧠 Information Integration\n**Description:** This evaluates the model's ability to **combine multiple pieces of information** to generate a coherent response. A higher integration score indicates better reasoning and synthesis across diverse inputs.")
-                integration_table = gr.Dataframe(value=pd.DataFrame(columns=["Model", "Integration Score"]), interactive=False)
+                gr.Markdown("### 🧠 Information Integration\n**Description:** The experimental result of information integration measured by accuracy (%) under different noise ratios. The result show that information integration poses a challenge for RAG in LLMs")
+                integration_table = gr.Dataframe(value=load_scores(Infomration_Integration_DIR), interactive=False)
         
 
         # Refresh Scores Function
         def refresh_scores():
-            return load_noise_robustness_scores(), load_negative_rejection_scores(), load_counterfactual_robustness_scores()
+            return load_scores(Noise_Robustness_DIR), load_negative_rejection_scores(), load_counterfactual_robustness_scores(), load_scores(Infomration_Integration_DIR)
 
-        refresh_btn.click(refresh_scores, outputs=[noise_table, rejection_table, counter_factual_table])
+        refresh_btn.click(refresh_scores, outputs=[noise_table, rejection_table, counter_factual_table, integration_table])
 
         # Button Functions
         def recalculate_noise_robustness(model_name, noise_rate, num_queries):
             update_config(config, model_name, noise_rate, num_queries)
             evaluate_noise_robustness(config)
-            return load_noise_robustness_scores()
+            return load_scores(Noise_Robustness_DIR)
         
         recalculate_noise_btn.click(recalculate_noise_robustness, inputs=[model_name_input, noise_rate_input, num_queries_input], outputs=[noise_table])
 
@@ -197,9 +199,11 @@ def launch_gradio_app(config):
         
         recalculate_negative_btn.click(recalculate_negative_rejection, inputs=[model_name_input, noise_rate_input, num_queries_input], outputs=[rejection_table])
 
-        def recalculate_integration_info():
-            return pd.DataFrame(columns=["Model", "Integration Score"])  # Placeholder
+        def recalculate_integration_info(model_name, noise_rate, num_queries):
+            update_config(config, model_name, noise_rate, num_queries)
+            evaluate_information_integration(config)
+            return load_scores(Infomration_Integration_DIR)
         
-        recalculate_integration_btn.click(recalculate_integration_info, outputs=[integration_table])
+        recalculate_integration_btn.click(recalculate_integration_info , inputs=[model_name_input, noise_rate_input, num_queries_input], outputs=[integration_table])
 
     app.launch()

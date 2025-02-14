@@ -1,7 +1,7 @@
 {
-    "reject_rate": 0.56,
+    "reject_rate": 0.6,
     "all_rate": 0.22,
     "tt": 11,
-    "rejecttt": 28,
+    "rejecttt": 30,
     "nums": 50
 }

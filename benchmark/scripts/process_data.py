@@ -18,7 +18,6 @@ def process_data(instance, noise_rate, passage_num, filename, correct_rate=0):
     if '_int' in filename:
         for i in instance['positive']:
             random.shuffle(i)
-        logging.info(len(instance['positive']))
         docs = [i[0] for i in instance['positive']]
         if len(docs) < pos_num:
             maxnum = max([len(i) for i in instance['positive']])
