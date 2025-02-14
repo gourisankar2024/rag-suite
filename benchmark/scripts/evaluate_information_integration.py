@@ -11,11 +11,11 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # Improved function to evaluate noise robustness
 def evaluate_information_integration(config):
     result_path = config["result_path"] + 'Information Integration/'
-    noise_rate = config["noise_rate"]
-    passage_num = config["passage_num"]
+    noise_rate = config['noise_rate']
+    passage_num = config['passage_num']
 
     # Iterate over each model specified in the config
-    filename = os.path.join(result_path, f'prediction_{config["model_name"]}_noise_{noise_rate}_passage_{passage_num}.json')
+    filename = os.path.join(result_path, f'prediction_{config['model_name']}_noise_{noise_rate}_passage_{passage_num}.json')
     ensure_directory_exists(filename)
 
     # Load existing results if file exists
@@ -45,7 +45,7 @@ def evaluate_information_integration(config):
 
     # Save the final score file with tt and all_rate
     scores = {
-        'model': config["model_name"],
+        'model': config['model_name'],
         'accuracy': accuracy,
         'noise_rate': noise_rate,
         'correct_count': correct_count,
@@ -56,7 +56,7 @@ def evaluate_information_integration(config):
     logging.info(f"Score: {scores}")
     logging.info(f"Information Integration Accuracy: {accuracy:.2%}")
     
-    score_filename = os.path.join(result_path, f'scores_{config["model_name"]}_noise_{noise_rate}_passage_{passage_num}.json')
+    score_filename = os.path.join(result_path, f'scores_{config['model_name']}_noise_{noise_rate}_passage_{passage_num}.json')
     with open(score_filename, 'w') as f:
         json.dump(scores, f, ensure_ascii=False, indent=4)
 

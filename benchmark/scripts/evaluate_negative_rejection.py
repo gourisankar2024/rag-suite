@@ -10,15 +10,15 @@ from scripts.prompt import get_prompt
 
 def evaluate_negative_rejection(config):
     """Evaluates negative rejection for a given model by processing predictions and computing scores."""
-    config["noise_rate"] = 1.0 # Noise rate should be 1.0 for negative rejection evaluation
-    modelname = config["model_name"]
-    noise_rate = config["noise_rate"]
-    passage_num = config["passage_num"]
+    config['noise_rate'] = 1.0 # Noise rate should be 1.0 for negative rejection evaluation
+    modelname = config['model_name']
+    noise_rate = config['noise_rate']
+    passage_num = config['passage_num']
     
-    if config["model_name"] in config["models"]:
-        model = GroqClient(plm=config["model_name"])
+    if config['model_name'] in config["models"]:
+        model = GroqClient(plm=config['model_name'])
     else:
-        logging.warning(f"Skipping unknown model: {config["model_name"]}")
+        logging.warning(f"Skipping unknown model: {config['model_name']}")
         return
 
     # File paths

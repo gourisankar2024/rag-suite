@@ -31,11 +31,11 @@ def update_config(config, model_name=None, noise_rate=None, num_queries=None):
         dict: The updated configuration dictionary.
     """
     if model_name:
-        config["model_name"] = model_name
+        config['model_name'] = model_name
     if noise_rate is not None:  # Explicitly check for None to handle 0.0
-        config["noise_rate"] = float(noise_rate)  # Ensure it's a float
+        config['noise_rate'] = float(noise_rate)  # Ensure it's a float
     if num_queries is not None:  # Explicitly check for None to handle 0
-        config["num_queries"] = int(num_queries)  # Ensure it's an integer
+        config['num_queries'] = int(num_queries)  # Ensure it's an integer
     return config
 
 def load_dataset(file_name):

@@ -9,15 +9,15 @@ from scripts.prompt import get_factual_prompt
 
 def evaluate_factual_robustness(config):
     """Evaluates negative rejection for a given model by processing predictions and computing scores."""
-    config["noise_rate"] = 0.4 # Time being to do clarification
-    modelname = config["model_name"]
-    noise_rate = config["noise_rate"]
-    passage_num = config["passage_num"]
+    config['noise_rate'] = 0.4 # Time being to do clarification
+    modelname = config['model_name']
+    noise_rate = config['noise_rate']
+    passage_num = config['passage_num']
     
-    if config["model_name"] in config["models"]:
-        model = GroqClient(plm=config["model_name"])
+    if config['model_name'] in config["models"]:
+        model = GroqClient(plm=config['model_name'])
     else:
-        logging.warning(f"Skipping unknown model: {config["model_name"]}")
+        logging.warning(f"Skipping unknown model: {config['model_name']}")
         return
 
     # File paths
@@ -84,7 +84,7 @@ def evaluate_factual_robustness(config):
             'rejecttt':rejecttt,
             'correct_tt':correct_tt,
             'nums': len(results),
-            'noise_rate': config["noise_rate"],
+            'noise_rate': config['noise_rate'],
         }
         return scores
     

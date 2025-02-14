@@ -13,17 +13,17 @@ def get_prediction_result(config, data_file_name):
     results = []
     dataset = load_dataset(data_file_name)
     # Create GroqClient instance for supported models
-    if config["model_name"] in config["models"]:
-        model = GroqClient(plm=config["model_name"])
+    if config['model_name'] in config["models"]:
+        model = GroqClient(plm=config['model_name'])
     else:
-        logging.warning(f"Skipping unknown model: {config["model_name"]}")
+        logging.warning(f"Skipping unknown model: {config['model_name']}")
         return
     
     # Iterate through dataset and process queries
-    for idx, instance in enumerate(dataset[:config["num_queries"]], start=0):
-        logging.info(f"Executing Query {idx + 1} for Model: {config["model_name"]}")
+    for idx, instance in enumerate(dataset[:config['num_queries']], start=0):
+        logging.info(f"Executing Query {idx + 1} for Model: {config['model_name']}")
 
-        query, ans, docs = process_data(instance, config["noise_rate"], config["passage_num"], data_file_name)
+        query, ans, docs = process_data(instance, config['noise_rate'], config['passage_num'], data_file_name)
 
         # Retry mechanism for prediction
         for attempt in range(1, config["retry_attempts"] + 1):
@@ -46,7 +46,7 @@ def get_prediction_result(config, data_file_name):
             'label': label,
             'prediction': prediction,
             'docs': docs,
-            'noise_rate': config["noise_rate"],
+            'noise_rate': config['noise_rate'],
             'factlabel': factlabel
         }
         results.append(new_instance)

@@ -31,7 +31,7 @@ def load_scores(file_dir):
             with open(filepath, "r") as f:
                 score = json.load(f)
                 model = score["model"]
-                noise_rate = str(score["noise_rate"])
+                noise_rate = str(score['noise_rate'])
 
                 models.add(model)
                 noise_rates.add(noise_rate)
@@ -95,8 +95,6 @@ def load_counterfactual_robustness_scores():
             with open(filepath, "r") as f:
                 score = json.load(f)
                 model = filename.split("_")[1]
-                #noise_rate = str(score["noise_rate"])
-
                 models.add(model)
                 score_data[model] = {
                     "Accuracy (%)": int(score["all_rate"] * 100),  # No decimal
