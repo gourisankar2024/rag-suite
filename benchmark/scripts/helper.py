@@ -3,6 +3,9 @@ import os
 import time
 import logging
 
+# Create a list to store logs
+logs = []
+
 # Helper function to ensure directory exists
 def ensure_directory_exists(filepath):
     """Ensure the directory for a given file path exists."""
@@ -45,3 +48,22 @@ def load_dataset(file_name):
             dataset.append(json.loads(line.strip()))  # Load each JSON object per line
     logging.info(f"Loaded {len(dataset)} entries from file {file_name}")  # Check how many records were loaded
     return dataset
+
+def initialize_logging():
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
+    # Custom log handler to capture logs and add them to the logs list
+    class LogHandler(logging.Handler):
+        def emit(self, record):
+            log_entry = self.format(record)
+            logs.append(log_entry)
+
+    # Add custom log handler to the logger
+    log_handler = LogHandler()
+    log_handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
+    logger.addHandler(log_handler)
+
+def get_logs():
+    """Retrieve logs for display."""
+    return "\n".join(logs[-50:])

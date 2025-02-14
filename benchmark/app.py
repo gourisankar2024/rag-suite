@@ -1,10 +1,11 @@
+import time
 import gradio as gr
 import os
 import json
 import pandas as pd
 from scripts.evaluate_information_integration import evaluate_information_integration
 from scripts.evaluate_negative_rejection import evaluate_negative_rejection
-from scripts.helper import update_config
+from scripts.helper import get_logs, initialize_logging, update_config
 from scripts.evaluate_noise_robustness import evaluate_noise_robustness
 from scripts.evaluate_factual_robustness import evaluate_factual_robustness
 
@@ -14,6 +15,11 @@ Negative_Rejection_DIR = "results/Negative Rejection/"
 Counterfactual_Robustness_DIR = "results/Counterfactual Robustness/"
 Infomration_Integration_DIR = "results/Information Integration/"
 
+def update_logs_periodically():
+    while True:
+        time.sleep(2)  # Wait for 2 seconds
+        yield get_logs() 
+        
 # Function to read and aggregate score data
 def load_scores(file_dir):
     models = set()
@@ -117,6 +123,8 @@ def load_counterfactual_robustness_scores():
 
 # Gradio UI
 def launch_gradio_app(config):
+    initialize_logging()
+    
     with gr.Blocks() as app:
         app.title = "RAG System Evaluation"
         gr.Markdown("# RAG System Evaluation on RGB Dataset")
@@ -125,7 +133,7 @@ def launch_gradio_app(config):
         with gr.Row():
             model_name_input = gr.Dropdown(
             label="Model Name",
-            choices= config["models"],
+            choices= config['models'],
             value="llama3-8b-8192",
             interactive=True
             )
@@ -168,6 +176,21 @@ def launch_gradio_app(config):
                 gr.Markdown("### 🧠 Information Integration\n**Description:** The experimental result of information integration measured by accuracy (%) under different noise ratios. The result show that information integration poses a challenge for RAG in LLMs")
                 integration_table = gr.Dataframe(value=load_scores(Infomration_Integration_DIR), interactive=False)
         
+        # Section to display logs
+        with gr.Row():
+            start_log_button = gr.Button("View logs", elem_id="start_btn", variant="primary", scale = 0)  # Button remains but isn't required
+            
+        with gr.Row():
+            log_section = gr.Textbox(label="Logs", interactive=False, visible=True, lines=10 , every=2)  # Log section
+
+        #logs_state = gr.State(get_logs())  # Store logs state
+
+        # Update UI when logs_state changes
+        app.queue() 
+        app.load(update_logs_periodically, outputs=log_section)
+
+        # Optional: Keep button for manual log refresh
+        start_log_button.click(fn=get_logs, outputs=log_section)
 
         # Refresh Scores Function
         def refresh_scores():
