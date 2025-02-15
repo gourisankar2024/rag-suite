@@ -16,7 +16,7 @@ def evaluate_noise_robustness(config):
     model_name = config['model_name']
 
     # Iterate over each model specified in the config
-    filename = os.path.join(result_path, f'prediction_{model_name}_noise_{noise_rate}_passage_{passage_num}.json')
+    filename = os.path.join(result_path, f'prediction_{config['output_file_extension']}.json')
     ensure_directory_exists(filename)
 
     # Load existing results if file exists
@@ -29,7 +29,7 @@ def evaluate_noise_robustness(config):
                 data = json.loads(line)
                 useddata[data['id']] = data'''
 
-    results = get_prediction_result(config, config['robustness_file_name'])  # Store results for this model
+    results = get_prediction_result(config, config['robustness_file_name'], filename)  # Store results for this model
 
     # Save results to a file
     with open(filename, 'w', encoding='utf-8') as f:
@@ -54,10 +54,10 @@ def evaluate_noise_robustness(config):
         'all_rate': all_rate,
         'tt': tt
     }
-    logging.info(f"score: {scores}")
-    logging.info(f"Noise Robustness Accuracy: {accuracy:.2%}")
+    logging.info(f"Noise Robustness Score: {scores}")
+    logging.info(f"Accuracy: {accuracy:.2%}")
     
-    score_filename = os.path.join(result_path, f'scores_{model_name}_noise_{noise_rate}_passage_{passage_num}.json')
+    score_filename = os.path.join(result_path, f'scores_{config['output_file_extension']}.json')
     with open(score_filename, 'w') as f:
         json.dump(scores, f, ensure_ascii=False, indent=4)
 

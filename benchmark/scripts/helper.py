@@ -2,6 +2,7 @@ import json
 import os
 import time
 import logging
+from pathlib import Path
 
 # Create a list to store logs
 logs = []
@@ -20,6 +21,17 @@ def adaptive_delay(attempt, max_delay=60):
     logging.info(f"Retrying after {delay} seconds...")
     time.sleep(delay)
 
+def load_config(config_file="config.json"):
+    """Load configuration from the config file."""
+    try:
+        with open(config_file, "r", encoding="utf-8") as f:
+            config = json.load(f)
+            config['output_file_extension'] = f'{config['model_name']}_noise_{config['noise_rate']}_passage_{config['passage_num']}_num_queries_{config['num_queries']}'
+        return config
+    except Exception as e:
+        logging.info(f"Error loading config: {e}")
+        return {}
+    
 def update_config(config, model_name=None, noise_rate=None, num_queries=None):
     """
     Update the config dictionary with user-provided values.
@@ -39,6 +51,9 @@ def update_config(config, model_name=None, noise_rate=None, num_queries=None):
         config['noise_rate'] = float(noise_rate)  # Ensure it's a float
     if num_queries is not None:  # Explicitly check for None to handle 0
         config['num_queries'] = int(num_queries)  # Ensure it's an integer
+    
+    config['output_file_extension'] = f'{config['model_name']}_noise_{config['noise_rate']}_passage_{config['passage_num']}_num_queries_{config['num_queries']}'
+    
     return config
 
 def load_dataset(file_name):
@@ -67,3 +82,20 @@ def initialize_logging():
 def get_logs():
     """Retrieve logs for display."""
     return "\n".join(logs[-50:])
+
+def load_used_data(filepath):
+        """Loads existing processed data to avoid redundant evaluations."""
+        used_data = {}
+        if Path(filepath).exists():
+            with open(filepath, encoding='utf-8') as f:
+                for line in f:
+                    data = json.loads(line)
+                    used_data[data['id']] = data
+        return used_data
+
+
+def update_logs_periodically():
+    while True:
+        time.sleep(2)  # Wait for 2 seconds
+        yield get_logs() 
+  

@@ -1,19 +1,21 @@
 import json
 import os
 import tqdm
-from pathlib import Path
 import logging
 from scripts.evaluate_noise_robustness import evaluate_noise_robustness
 from scripts.groq_client import GroqClient
-from scripts.helper import adaptive_delay, ensure_directory_exists
+from scripts.helper import adaptive_delay, load_used_data
 from scripts.prompt import get_prompt
 
 def evaluate_negative_rejection(config):
     """Evaluates negative rejection for a given model by processing predictions and computing scores."""
+    if config.get('noise_rate', 1) != 1:
+        logging.warning("Noise rate is not 1.0. Exiting evaluation.")
+        return
+    
     config['noise_rate'] = 1.0 # Noise rate should be 1.0 for negative rejection evaluation
     modelname = config['model_name']
     noise_rate = config['noise_rate']
-    passage_num = config['passage_num']
     
     if modelname in config['models']:
         model = GroqClient(plm=modelname)
@@ -23,27 +25,15 @@ def evaluate_negative_rejection(config):
 
     # File paths
     base_path = "results"
-    evalue_file = f"{base_path}/Noise Robustness/prediction_{modelname}_noise_{noise_rate}_passage_{passage_num}.json"
-    output_file = f"{base_path}/Negative Rejection/output_{modelname}_noise_{noise_rate}_passage_{passage_num}.json"
-    result_file = f"{base_path}/Negative Rejection/scores_{modelname}_noise_{noise_rate}_passage_{passage_num}.json"
+    evalue_file = f"{base_path}/Noise Robustness/prediction_{config['output_file_extension']}.json"
+    output_file = f"{base_path}/Negative Rejection/output_{config['output_file_extension']}.json"
+    result_file = f"{base_path}/Negative Rejection/scores_{config['output_file_extension']}.json"
     
-    #ensure_directory_exists(output_file)
-    directory = os.path.dirname(evalue_file)
-    if not os.path.exists(directory):
+    if not os.path.exists(evalue_file):
         logging.info(f"Evaluation file does not exist for model{modelname} and noise rate {noise_rate}.")
         logging.info("Generating evaluation file")
         evaluate_noise_robustness(config)
     
-    def load_used_data(filepath):
-        """Loads existing processed data to avoid redundant evaluations."""
-        used_data = {}
-        if Path(filepath).exists():
-            with open(filepath, encoding='utf-8') as f:
-                for line in f:
-                    data = json.loads(line)
-                    used_data[data['id']] = data
-        return used_data
-
     def process_query(model, data, used_data, output_file):
         """Processes a single query, generates evaluation, and writes the result."""
         if data['id'] in used_data and data['query'] == used_data[data['id']]['query'] and data['ans'] == used_data[data['id']]['ans']:
@@ -83,8 +73,13 @@ def evaluate_negative_rejection(config):
             'nums': total,
         }
 
-    used_data = []#load_used_data(output_file)
+    used_data = []
     results = []
+    if config['UsePreCalculatedValue']: 
+        logging.info(f"Trying to use pre calculated values for Negative rejection report generation")
+        used_data = load_used_data(output_file)
+    else:
+        logging.info(f"Recalculating the metrics...")
 
     with open(output_file, 'w', encoding='utf-8') as f_out, open(evalue_file, 'r', encoding='utf-8') as f_eval:
         for line in tqdm.tqdm(f_eval):
@@ -95,7 +90,7 @@ def evaluate_negative_rejection(config):
 
     # Compute scores and save
     scores = calculate_scores(results)
-    print(f"Score: {scores}")
+    logging.info(f"Negative Rejection Score: {scores}")
 
     with open(result_file, 'w', encoding='utf-8') as f_result:
         json.dump(scores, f_result, ensure_ascii=False, indent=4)

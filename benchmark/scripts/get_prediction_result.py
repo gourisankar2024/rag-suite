@@ -1,5 +1,5 @@
 import logging
-from scripts.helper import adaptive_delay, load_dataset
+from scripts.helper import adaptive_delay, load_dataset, load_used_data
 from scripts.process_data import process_data
 from scripts.groq_client import GroqClient
 from scripts.prediction import predict
@@ -9,11 +9,12 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 # Get prediction from LLM based on different dataset
 
-def get_prediction_result(config, data_file_name):
+def get_prediction_result(config, data_file_name, prediction_file_name=''):
     results = []
+    used_data = []
     dataset = load_dataset(data_file_name)
     modelname = config['model_name']
-
+    
     # Create GroqClient instance for supported models
     if modelname in config['models']:
         model = GroqClient(plm=modelname)
@@ -21,10 +22,19 @@ def get_prediction_result(config, data_file_name):
         logging.warning(f"Skipping unknown model: {modelname}")
         return
     
+    if config['UsePreCalculatedValue']: 
+        logging.info(f"Trying to use pre calculated values for report generation")
+        used_data = load_used_data(prediction_file_name)
+    else:
+        logging.info(f"Recalculating the metrics...")
+
     # Iterate through dataset and process queries
     for idx, instance in enumerate(dataset[:config['num_queries']], start=0):
+        if instance['id'] in used_data and instance['query'] == used_data[instance['id']]['query'] and instance['answer']  == used_data[instance['id']]['ans']:
+                results.append(used_data[instance['id']])
+                continue
+        
         logging.info(f"Executing Query {idx + 1} for Model: {modelname}")
-
         query, ans, docs = process_data(instance, config['noise_rate'], config['passage_num'], data_file_name)
 
         # Retry mechanism for prediction

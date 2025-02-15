@@ -10,22 +10,20 @@ from scripts.prompt import get_factual_prompt
 def evaluate_factual_robustness(config):
     """Evaluates negative rejection for a given model by processing predictions and computing scores."""
     config['noise_rate'] = 0.4 # Time being to do clarification
-    modelname = config['model_name']
-    noise_rate = config['noise_rate']
-    passage_num = config['passage_num']
+    model_name = config['model_name']
     
-    if modelname in config['models']:
+    if model_name in config['models']:
         model = GroqClient(plm=config['model_name'])
     else:
-        logging.warning(f"Skipping unknown model: {modelname}")
+        logging.warning(f"Skipping unknown model: {model_name}")
         return
 
     # File paths
     base_path = "results/Counterfactual Robustness"
-    evalue_file = get_factual_evaluation(config) #f"{base_path}/prediction_{modelname}_noise_{noise_rate}_passage_{passage_num}.json"
+    evalue_file = get_factual_evaluation(config)
     print(f"Factual pred file {evalue_file}")
-    output_file = f"{base_path}/output_{modelname}_noise_{noise_rate}_passage_{passage_num}.json"
-    result_file = f"{base_path}/scores_{modelname}_noise_{noise_rate}_passage_{passage_num}.json"
+    output_file = f"{base_path}/output_{config['output_file_extension']}.json"
+    result_file = f"{base_path}/scores_{config['output_file_extension']}.json"
     ensure_directory_exists(output_file)
     
     def load_used_data(filepath):
@@ -99,9 +97,8 @@ def evaluate_factual_robustness(config):
                 results.append(processed_data)
 
     # Compute scores and save
-    #print(results)
     scores = calculate_scores(results, config)
-    print(f"Score: {scores}")
+    logging.info(f"Counterfactual Robustness Score: {scores}")
 
     with open(result_file, 'w', encoding='utf-8') as f_result:
         json.dump(scores, f_result, ensure_ascii=False, indent=4)

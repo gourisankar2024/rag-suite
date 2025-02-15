@@ -3,13 +3,14 @@ import os
 import logging
 
 class GroqClient:
-    def __init__(self, plm="mixtral-8x7b-32768"):
+    def __init__(self, plm):
+        os.environ["GROQ_API_KEY"] = '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'
         # Fetch API Key from environment variables for security
         api_key = os.getenv("GROQ_API_KEY")  # Fetch from environment
         if not api_key:
             raise ValueError("GROQ_API_KEY is not set. Please add it in Hugging Face Secrets.")
         
-        os.environ["GROQ_API_KEY"] = api_key  # Explicitly set it
+          # Explicitly set it
         self.api_key = api_key  
         self.model = plm
         self.api_url = "https://api.groq.com/openai/v1/chat/completions"

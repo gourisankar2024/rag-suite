@@ -2,12 +2,14 @@
     "robustness_file_name":"en_refine.json",
     "factual_file_name":"en_fact.json",
     "integration_file_name":"en_int.json",
+    "output_file_extension":"",
     "result_path": "results/",
     "models": ["llama3-8b-8192", "qwen-2.5-32b", "mixtral-8x7b-32768", "gemma2-9b-it", "deepseek-r1-distill-llama-70b" ],
-    "model_name":"gemma2-9b-it",
+    "model_name":"llama3-8b-8192",
     "noise_rate": 0.4,
     "passage_num": 5,
-    "num_queries": 50,
+    "num_queries": 10,
     "retry_attempts": 3,
-    "timeout_limit": 60
+    "timeout_limit": 60,
+    "UsePreCalculatedValue": true
 }
