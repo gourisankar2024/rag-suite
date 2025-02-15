@@ -22,8 +22,28 @@ def launch_gradio_app(config):
         app.title = "RAG System Evaluation"
         gr.Markdown("# RAG System Evaluation on RGB Dataset")
 
+        # Add the description here
+        gr.Markdown("""
+        Welcome to the **RAG System Evaluation on RGB Dataset**! This tool is designed to evaluate and compare the performance of various **Large Language Models (LLMs)** using Retrieval-Augmented Generation (RAG) on the RGB dataset. The evaluation focuses on key metrics such as **Noise Robustness**, **Negative Rejection**, **Counterfactual Robustness**, and **Information Integration**. These metrics help assess how well different models handle noisy inputs, reject invalid queries, manage counterfactual scenarios, and integrate information effectively.
+
+        #### Key Features:
+        - **Compare Multiple LLMs**: Evaluate and compare the performance of different LLMs side by side.
+        - **Pre-calculated Metrics**: View results from pre-computed evaluations for quick insights.
+        - **Recalculate Metrics**: Option to recalculate metrics for custom configurations.
+        - **Interactive Controls**: Adjust model parameters, noise rates, and query counts to explore model behavior under different conditions.
+        - **Detailed Reports**: Visualize results in clear, interactive tables for each evaluation metric.
+
+        #### How to Use:
+        1. **Select a Model**: Choose from the available LLMs to evaluate.
+        2. **Configure Model Settings**: Adjust the noise rate and set the number of queries.
+        3. **Choose Evaluation Mode**: Use pre-calculated values for quick results or recalculate metrics for custom analysis.
+        4. **Compare Results**: Review and compare the evaluation metrics across different models in the tables below.
+        5. **Logs**: View live logs to monitor what's happening behind the scenes in real-time.
+                    
+        """)
+
         # Top Section - Inputs and Controls
-        with gr.Accordion("Model Configuration", open=True):
+        with gr.Accordion("Model Settings", open=True):
             with gr.Row():
                 with gr.Column():
                     model_name_input = gr.Dropdown(
@@ -48,9 +68,10 @@ def launch_gradio_app(config):
                 with gr.Column():
                     toggle = gr.Checkbox(
                         label="Use pre-calculated values?",
-                        value=True
+                        value=True,
+                        info="If enabled, the report(s) will use pre-calculated metrics from saved output files. Disable to recalculate metrics."
                     )
-                    refresh_btn = gr.Button("Refresh", variant="primary")
+                    refresh_btn = gr.Button("Refresh", variant="primary", scale= 0)
         # Next Section - Action Buttons
         with gr.Accordion("Evaluation Actions", open=True):
             with gr.Row():
@@ -60,7 +81,7 @@ def launch_gradio_app(config):
                 recalculate_integration_btn = gr.Button("Evaluate Integration Information")
 
         # Middle Section - Data Tables
-        with gr.Accordion("Evaluation Results", open=True):
+        with gr.Accordion("Evaluation Results", open=False):
             with gr.Row():
                 with gr.Column():
                     gr.Markdown("### 📊 Noise Robustness\n**Description:** The experimental result of noise robustness measured by accuracy (%) under different noise ratios.")
