@@ -24,7 +24,7 @@ def launch_gradio_app(config):
 
         # Add the description here
         gr.Markdown("""
-        Welcome to the **RAG System Evaluation on RGB Dataset**! This tool is designed to evaluate and compare the performance of various **Large Language Models (LLMs)** using Retrieval-Augmented Generation (RAG) on the RGB dataset. The evaluation focuses on key metrics such as **Noise Robustness**, **Negative Rejection**, **Counterfactual Robustness**, and **Information Integration**. These metrics help assess how well different models handle noisy inputs, reject invalid queries, manage counterfactual scenarios, and integrate information effectively.
+        Welcome to the **RAG System Evaluation on RGB Dataset**! This tool is designed to evaluate and compare the performance of various **Large Language Models (LLMs)** using Retrieval-Augmented Generation (RAG) on the [**RGB dataset**](https://github.com/chen700564/RGB). The evaluation focuses on key metrics such as **Noise Robustness**, **Negative Rejection**, **Counterfactual Robustness**, and **Information Integration**. These metrics help assess how well different models handle noisy inputs, reject invalid queries, manage counterfactual scenarios, and integrate information effectively.
 
         #### Key Features:
         - **Compare Multiple LLMs**: Evaluate and compare the performance of different LLMs side by side.
