@@ -1,10 +1,9 @@
 import json
 import tqdm
-from pathlib import Path
 import logging
 from scripts.get_factual_evaluation import get_factual_evaluation
 from scripts.groq_client import GroqClient
-from scripts.helper import adaptive_delay, ensure_directory_exists
+from scripts.helper import adaptive_delay, ensure_directory_exists, load_used_data
 from scripts.prompt import get_factual_prompt
 
 def evaluate_factual_robustness(config):
@@ -26,16 +25,6 @@ def evaluate_factual_robustness(config):
     result_file = f"{base_path}/scores_{config['output_file_extension']}.json"
     ensure_directory_exists(output_file)
     
-    def load_used_data(filepath):
-        """Loads existing processed data to avoid redundant evaluations."""
-        used_data = {}
-        '''if Path(filepath).exists():
-            with open(filepath, encoding='utf-8') as f:
-                for line in f:
-                    data = json.loads(line)
-                    used_data[data['id']] = data'''
-        return used_data
-
     def process_query(model, data, used_data, output_file):
         """Processes a single query, generates evaluation, and writes the result."""
         if data['id'] in used_data and data['query'] == used_data[data['id']]['query'] and data['ans'] == used_data[data['id']]['ans']:
@@ -86,8 +75,13 @@ def evaluate_factual_robustness(config):
         }
         return scores
     
-    used_data = load_used_data(output_file)
+    used_data = []
     results = []
+    if config['UsePreCalculatedValue']: 
+        logging.info(f"Trying to use pre calculated values for Counterfactual report generation")
+        used_data = load_used_data(output_file)
+    else:
+        logging.info(f"Recalculating the metrics...")
 
     with open(output_file, 'w', encoding='utf-8') as f_out, open(evalue_file, 'r', encoding='utf-8') as f_eval:
         for line in tqdm.tqdm(f_eval):
