@@ -4,7 +4,7 @@ import logging
 
 class GroqClient:
     def __init__(self, plm):
-        os.environ["GROQ_API_KEY"] = ''
+        os.environ["GROQ_API_KEY"] = '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'
         # Fetch API Key from environment variables for security
         api_key = os.getenv("GROQ_API_KEY")  # Fetch from environment
         if not api_key:
