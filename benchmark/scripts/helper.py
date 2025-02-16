@@ -26,7 +26,7 @@ def load_config(config_file="config.json"):
     try:
         with open(config_file, "r", encoding="utf-8") as f:
             config = json.load(f)
-            config['output_file_extension'] = f'{config['model_name']}_noise_{config['noise_rate']}_passage_{config['passage_num']}_num_queries_{config['num_queries']}'
+            config['output_file_extension'] = f"{config['model_name']}_noise_{config['noise_rate']}_passage_{config['passage_num']}_num_queries_{config['num_queries']}"
         return config
     except Exception as e:
         logging.info(f"Error loading config: {e}")
@@ -52,7 +52,7 @@ def update_config(config, model_name=None, noise_rate=None, num_queries=None):
     if num_queries is not None:  # Explicitly check for None to handle 0
         config['num_queries'] = int(num_queries)  # Ensure it's an integer
     
-    config['output_file_extension'] = f'{config['model_name']}_noise_{config['noise_rate']}_passage_{config['passage_num']}_num_queries_{config['num_queries']}'
+    config['output_file_extension'] = f"{config['model_name']}_noise_{config['noise_rate']}_passage_{config['passage_num']}_num_queries_{config['num_queries']}"
     
     return config
 

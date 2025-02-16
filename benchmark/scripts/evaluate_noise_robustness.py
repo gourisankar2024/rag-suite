@@ -16,7 +16,7 @@ def evaluate_noise_robustness(config):
     model_name = config['model_name']
 
     # Iterate over each model specified in the config
-    filename = os.path.join(result_path, f'prediction_{config['output_file_extension']}.json')
+    filename = os.path.join(result_path, f"prediction_{config['output_file_extension']}.json")
     ensure_directory_exists(filename)
 
     # Load existing results if file exists
@@ -57,7 +57,7 @@ def evaluate_noise_robustness(config):
     logging.info(f"Noise Robustness Score: {scores}")
     logging.info(f"Accuracy: {accuracy:.2%}")
     
-    score_filename = os.path.join(result_path, f'scores_{config['output_file_extension']}.json')
+    score_filename = os.path.join(result_path, f"scores_{config['output_file_extension']}.json")
     with open(score_filename, 'w') as f:
         json.dump(scores, f, ensure_ascii=False, indent=4)
 
