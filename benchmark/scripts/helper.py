@@ -81,7 +81,7 @@ def initialize_logging():
 
 def get_logs():
     """Retrieve logs for display."""
-    return "\n".join(logs[-50:])
+    return "\n".join(logs[-1000:])
 
 def load_used_data(filepath):
         """Loads existing processed data to avoid redundant evaluations."""
