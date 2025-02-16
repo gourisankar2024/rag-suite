@@ -1,0 +1,7 @@
+{
+    "reject_rate": 0.4,
+    "all_rate": 0.1,
+    "tt": 1,
+    "rejecttt": 4,
+    "nums": 10
+}

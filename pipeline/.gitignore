@@ -1,6 +1,6 @@
 venv/
 __pycache__/
-testvenv/
+pipeline-venv/
 # Ignore a directory
 embeddings.faiss
 local_datasets
