@@ -12,22 +12,10 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 def evaluate_noise_robustness(config):
     result_path = config['result_path'] + 'Noise Robustness/'
     noise_rate = config['noise_rate']
-    passage_num = config['passage_num']
-    model_name = config['model_name']
 
     # Iterate over each model specified in the config
     filename = os.path.join(result_path, f'prediction_{config['output_file_extension']}.json')
     ensure_directory_exists(filename)
-
-    # Load existing results if file exists
-    '''
-    useddata = {}
-    if os.path.exists(filename):
-        logging.info(f"Loading existing results from {filename}")
-        with open(filename) as f:
-            for line in f:
-                data = json.loads(line)
-                useddata[data['id']] = data'''
 
     results = get_prediction_result(config, config['robustness_file_name'], filename)  # Store results for this model
 
