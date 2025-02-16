@@ -6,7 +6,7 @@ from generator.compute_metrics import get_metrics
 from generator.extract_attributes import extract_attributes
 
 def retrieve_and_generate_response(gen_llm, vector_store, query):
-    logging.info(f'Query: {query}')
+    logging.info(f"Query: {query}")
     
     # Step 1: Retrieve relevant documents for given query
     relevant_docs = retrieve_top_k_documents(vector_store, query, top_k=5)

@@ -46,7 +46,7 @@ def evaluate_information_integration(config):
     logging.info(f"Information IntegrationScore: {scores}")
     logging.info(f"Accuracy: {accuracy:.2%}")
     
-    score_filename = os.path.join(result_path, f'scores_{config['output_file_extension']}.json')
+    score_filename = os.path.join(result_path, f"scores_{config['output_file_extension']}.json")
     with open(score_filename, 'w') as f:
         json.dump(scores, f, ensure_ascii=False, indent=4)
 
