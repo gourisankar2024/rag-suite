@@ -69,7 +69,7 @@ def launch_gradio_app(config):
                     toggle = gr.Checkbox(
                         label="Use pre-calculated values?",
                         value=True,
-                        info="If enabled, the report(s) will use pre-calculated metrics from saved output files. Disable to recalculate metrics."
+                        info="If checked, the report(s) will use pre-calculated metrics from saved output files. If any report has N/A value, Click on respective report generation button to generate value based on configuration. Uncheck to recalculate the metrics again."
                     )
                     refresh_btn = gr.Button("Refresh", variant="primary", scale= 0)
         # Next Section - Action Buttons

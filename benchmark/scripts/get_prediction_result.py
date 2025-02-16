@@ -14,7 +14,9 @@ def get_prediction_result(config, data_file_name, prediction_file_name=''):
     used_data = []
     dataset = load_dataset(data_file_name)
     modelname = config['model_name']
-    
+    num_queries = min(config['num_queries'], len(dataset))
+    subdataset = dataset[:num_queries]
+
     # Create GroqClient instance for supported models
     if modelname in config['models']:
         model = GroqClient(plm=modelname)
@@ -26,10 +28,10 @@ def get_prediction_result(config, data_file_name, prediction_file_name=''):
         logging.info(f"Trying to use pre calculated values for report generation")
         used_data = load_used_data(prediction_file_name)
     else:
-        logging.info(f"Recalculating the metrics...")
+        logging.info(f"Running evaluation for {num_queries} queries...")
 
     # Iterate through dataset and process queries
-    for idx, instance in enumerate(dataset[:config['num_queries']], start=0):
+    for idx, instance in enumerate(subdataset, start=0):
         if instance['id'] in used_data and instance['query'] == used_data[instance['id']]['query'] and instance['answer']  == used_data[instance['id']]['ans']:
                 results.append(used_data[instance['id']])
                 continue
