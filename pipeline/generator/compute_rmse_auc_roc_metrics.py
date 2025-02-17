@@ -23,7 +23,7 @@ def compute_rmse_auc_roc_metrics(gen_llm, val_llm, dataset, vector_store, num_qu
         ground_truth_adherence = 1 if dataset[i]['adherence_score'] else 0
         
         query = document['question']
-        logging.info(f'Query number: {i + 1}')
+        logging.info(f"Query number: {i + 1}")
         # Call the generate_metrics for each query
         response, source_docs = retrieve_and_generate_response(gen_llm, vector_store, query)
         attributes, metrics = generate_metrics(val_llm, response, source_docs, query, 25)

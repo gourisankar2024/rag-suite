@@ -1,0 +1,9 @@
+{
+    "model": "llama3-8b-8192",
+    "accuracy": 0.2,
+    "noise_rate": 0.8,
+    "correct_count": 20,
+    "total": 100,
+    "all_rate": 0.2,
+    "tt": 20
+}

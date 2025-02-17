@@ -29,7 +29,7 @@ def launch_gradio(config : AppConfig):
             state["response"] = response
             state["source_docs"] = source_docs
             
-            response_text = f"Response: {response}\n\n"
+            response_text = f"Response from Model : {response}\n\n"
             return response_text, state
         except Exception as e:
             logging.error(f"Error processing query: {e}")
@@ -49,7 +49,7 @@ def launch_gradio(config : AppConfig):
             
             attributes_text = get_attributes_text(attributes)
 
-            metrics_text = "Metrics:\n"
+            metrics_text = ""
             for key, value in metrics.items():
                 if key != 'response':
                     metrics_text += f"{key}: {value}\n"
@@ -74,6 +74,7 @@ def launch_gradio(config : AppConfig):
         return (
             f"Embedding Model: {ConfigConstants.EMBEDDING_MODEL_NAME}\n"
             f"Generation LLM: {config.gen_llm.name if hasattr(config.gen_llm, 'name') else 'Unknown'}\n"
+            f"Re-ranking LLM: {ConfigConstants.RE_RANKER_MODEL_NAME}\n"
             f"Validation LLM: {config.val_llm.name if hasattr(config.val_llm, 'name') else 'Unknown'}\n"
         )
 
@@ -84,50 +85,118 @@ def launch_gradio(config : AppConfig):
     def reinitialize_val_llm(val_llm_name):
         return reinitialize_llm("validation", val_llm_name)
     
+    # Function to update query input when a question is selected from the dropdown
+    def update_query_input(selected_question):
+        return selected_question
+        
     # Define Gradio Blocks layout
     with gr.Blocks() as interface:
         interface.title = "Real Time RAG Pipeline Q&A"
-        gr.Markdown("# Real Time RAG Pipeline Q&A")  # Heading
+        gr.Markdown("""
+            # Real Time RAG Pipeline Q&A
+            The **Retrieval-Augmented Generation (RAG) Pipeline** combines retrieval-based and generative AI models to provide accurate and context-aware answers to your questions. 
+            It retrieves relevant documents from a dataset (e.g., COVIDQA, TechQA, FinQA) and uses a generative model to synthesize a response. 
+            Metrics are computed to evaluate the quality of the response and the retrieval process.
+            """)
+        # Model Configuration
+        with gr.Accordion("System Information", open=False):
+            with gr.Row():
+                # Column for Generation Model Dropdown
+                with gr.Column(scale=1):
+                    new_gen_llm_input = gr.Dropdown(
+                        label="Generation Model",
+                        choices=ConfigConstants.GENERATION_MODELS,
+                        value=ConfigConstants.GENERATION_MODELS[0] if ConfigConstants.GENERATION_MODELS else None,
+                        interactive=True,
+                        info="Select the generative model for response generation."
+                    )
+                
+                # Column for Validation Model Dropdown
+                with gr.Column(scale=1):
+                    new_val_llm_input = gr.Dropdown(
+                        label="Validation Model",
+                        choices=ConfigConstants.VALIDATION_MODELS,
+                        value=ConfigConstants.VALIDATION_MODELS[0] if ConfigConstants.VALIDATION_MODELS else None,
+                        interactive=True,
+                        info="Select the model for validating the response quality."
+                    )
+                
+                # Column for Model Information
+                with gr.Column(scale=2):
+                    model_info_display = gr.Textbox(
+                        value=get_updated_model_info(),  # Use the helper function
+                        label="Model Configuration",
+                        interactive=False,  # Read-only textbox
+                        lines=5 
+                    )
         
-        # Textbox for new generation LLM name
-        with gr.Row():
-            new_gen_llm_input = gr.Dropdown(
-                label="Generation Model",
-                choices=ConfigConstants.GENERATION_MODELS,  # Directly use the list
-                value=ConfigConstants.GENERATION_MODELS[0] if ConfigConstants.GENERATION_MODELS else None,  # First value dynamically
-                interactive=True
-            )
+        # Query Section
+        gr.Markdown("Ask a question and get a response with metrics calculated from the RAG pipeline.")
+        all_questions = [
+            "When was the first case of COVID-19 identified?",
+            "What are the ages of the patients in this study?",
+            "What is the Hepatitis C virus?",
+            "Explain the concept of blockchain.",
+            "What is the capital of France?",
+            "What are the symptoms of COVID-19?",
+            "How does a vaccine work?",
+            "What is the difference between RNA and DNA?",
+            "What are the risk factors for heart disease?",
+            "What is the role of insulin in the body?",
+            # Add more questions as needed
+        ]
 
-            new_val_llm_input = gr.Dropdown(
-                label="Validation Model",
-                choices=ConfigConstants.VALIDATION_MODELS,  # Directly use the list
-                value=ConfigConstants.VALIDATION_MODELS[0] if ConfigConstants.VALIDATION_MODELS else None,  # First value dynamically
-                interactive=True
-            )
+        # Subset of questions to display as examples
+        example_questions = [
+            "When was the first case of COVID-19 identified?",
+            "What are the ages of the patients in this study?",
+            "What is the Hepatitis C virus?",
+            "Explain the concept of blockchain.",
+            "What is the capital of France?"
+        ]  
+        with gr.Row():
+            with gr.Column():
+                with gr.Row():
+                    query_input = gr.Textbox(
+                        label="Ask a question ",
+                        placeholder="Type your query here or select from examples/dropdown",
+                        lines=2
+                    )
+                with gr.Row():
+                    submit_button = gr.Button("Submit", variant="primary", scale=0)
+                    clear_query_button = gr.Button("Clear", scale=0)
+            with gr.Column():
+                gr.Examples(
+                    examples=example_questions,  # Make sure the variable name matches
+                    inputs=query_input,
+                    label="Try these examples:"
+                )
+                question_dropdown = gr.Dropdown(
+                    label="",
+                    choices=all_questions,
+                    interactive=True,
+                    info="Choose a question from the dropdown to populate the query box."
+                )
+        
+        # Attach event listener to dropdown
+        question_dropdown.change(
+            fn=update_query_input,
+            inputs=question_dropdown,
+            outputs=query_input
+        )
 
-            model_info_display = gr.Textbox(
-                value=get_updated_model_info(),  # Use the helper function
-                label="System Information",
-                interactive=False  # Read-only textbox
-            )
-
-        # State to store response and source documents
-        state = gr.State(value={"query": "","response": "", "source_docs": {}})
-        gr.Markdown("Ask a question and get a response with metrics calculated from the RAG pipeline.")  # Description
+        # Response and Metrics
         with gr.Row():
-            query_input = gr.Textbox(label="Ask a question", placeholder="Type your query here")
-        with gr.Row():
-            submit_button = gr.Button("Submit", variant="primary", scale = 0)  # Submit button
-            clear_query_button = gr.Button("Clear", scale = 0)  # Clear button
-        with gr.Row():
-            answer_output = gr.Textbox(label="Response", placeholder="Response will appear here")
+            answer_output = gr.Textbox(label="Response", placeholder="Response will appear here", lines=2)
         
         with gr.Row():
             compute_metrics_button = gr.Button("Compute metrics", variant="primary" , scale = 0)
             attr_output = gr.Textbox(label="Attributes", placeholder="Attributes will appear here")
             metrics_output = gr.Textbox(label="Metrics", placeholder="Metrics will appear here")
        
-        #with gr.Row():
+        # State to store response and source documents
+        state = gr.State(value={"query": "","response": "", "source_docs": {}})
+
         # Attach event listeners to update model info on change
         new_gen_llm_input.change(reinitialize_gen_llm, inputs=new_gen_llm_input, outputs=model_info_display)
         new_val_llm_input.change(reinitialize_val_llm, inputs=new_val_llm_input, outputs=model_info_display)
@@ -146,8 +215,9 @@ def launch_gradio(config : AppConfig):
         )
         
         # Section to display logs
-        with gr.Row():
-            log_section = gr.Textbox(label="Logs", interactive=False, visible=True, lines=10 , every=2)  # Log section
+        with gr.Accordion("View Live Logs", open=False):
+            with gr.Row():
+                log_section = gr.Textbox(label="Logs", interactive=False, visible=True, lines=10 , every=2)  # Log section
 
         # Update UI when logs_state changes
         interface.queue() 
