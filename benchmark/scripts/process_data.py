@@ -3,7 +3,6 @@ import random
 import math
 
 def process_data(instance, noise_rate, passage_num, filename, correct_rate=0):
-    print(filename)
     """Process the data for generating a noisy document set."""
     query = instance['query']
     ans = instance['answer']

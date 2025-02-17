@@ -1,0 +1,9 @@
+{
+    "model": "qwen-2.5-32b",
+    "accuracy": 0.46,
+    "noise_rate": 0.4,
+    "correct_count": 46,
+    "total": 100,
+    "all_rate": 0.46,
+    "tt": 46
+}
