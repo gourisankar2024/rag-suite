@@ -1,0 +1,9 @@
+{
+    "model": "deepseek-r1-distill-llama-70b",
+    "accuracy": 0.9,
+    "noise_rate": 0.4,
+    "correct_count": 45,
+    "total": 50,
+    "all_rate": 0.9,
+    "tt": 45
+}
