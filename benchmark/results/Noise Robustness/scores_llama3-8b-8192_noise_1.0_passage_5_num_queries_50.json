@@ -1,9 +1,9 @@
 {
     "model": "llama3-8b-8192",
-    "accuracy": 0.08,
+    "accuracy": 0.12,
     "noise_rate": 1.0,
-    "correct_count": 4,
+    "correct_count": 6,
     "total": 50,
-    "all_rate": 0.24,
-    "tt": 12
+    "all_rate": 0.26,
+    "tt": 13
 }

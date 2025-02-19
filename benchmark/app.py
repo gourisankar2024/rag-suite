@@ -43,7 +43,7 @@ def launch_gradio_app(config):
         """)
 
         # Top Section - Inputs and Controls
-        with gr.Accordion("Model Settings", open=True):
+        with gr.Accordion("Model Settings", open=False):
             with gr.Row():
                 with gr.Column():
                     model_name_input = gr.Dropdown(
@@ -73,7 +73,7 @@ def launch_gradio_app(config):
                     )
                     refresh_btn = gr.Button("Refresh", variant="primary", scale= 0)
         # Next Section - Action Buttons
-        with gr.Accordion("Evaluation Actions", open=True):
+        with gr.Accordion("Evaluation Actions", open=False):
             with gr.Row():
                 recalculate_noise_btn = gr.Button("Evaluate Noise Robustness")
                 recalculate_negative_btn = gr.Button("Evaluate Negative Rejection")
@@ -81,7 +81,7 @@ def launch_gradio_app(config):
                 recalculate_integration_btn = gr.Button("Evaluate Integration Information")
 
         # Middle Section - Data Tables
-        with gr.Accordion("Evaluation Results", open=False):
+        with gr.Accordion("Evaluation Results", open=True):
             with gr.Row():
                 with gr.Column():
                     gr.Markdown("### 📊 Noise Robustness\n**Description:** The experimental result of noise robustness measured by accuracy (%) under different noise ratios.")

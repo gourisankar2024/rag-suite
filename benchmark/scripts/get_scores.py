@@ -93,6 +93,8 @@ def load_negative_rejection_scores(config):
     return df
 
 def load_counterfactual_robustness_scores(config):
+    #hard code noise rate to 0.4
+    config['noise_rate'] = 0.4
     if not os.path.exists(Counterfactual_Robustness_DIR):
         return pd.DataFrame(columns=["Model", "Accuracy with factual docs (%)", "Error Detection Rate", "Correction Rate (%)"])
 

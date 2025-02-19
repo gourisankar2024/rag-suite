@@ -29,8 +29,10 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from config import ConfigConstants  
 
 
-def embed_documents(documents: List[Dict], embedding_path: str = "embeddings.faiss", metadata_path: str = "metadata.json") -> FAISS:
+def embed_documents(documents: List[Dict], embedding_path: str = "/persistent/embeddings/embeddings.faiss", metadata_path: str = "/persistent/embeddings/metadata.json") -> FAISS:
     logging.info(f"Total documents got :{len(documents)}")
+    os.makedirs(os.path.dirname(embedding_path), exist_ok=True)
+    os.makedirs(os.path.dirname(metadata_path), exist_ok=True)
     embedding_model = HuggingFaceEmbeddings(model_name=ConfigConstants.EMBEDDING_MODEL_NAME)
     
     if os.path.exists(embedding_path) and os.path.exists(metadata_path):

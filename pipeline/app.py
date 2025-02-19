@@ -1,18 +1,21 @@
 import gradio as gr
 import logging
-import threading
 import time
 from generator.compute_metrics import get_attributes_text
 from generator.generate_metrics import generate_metrics, retrieve_and_generate_response
 from config import AppConfig, ConfigConstants
 from generator.initialize_llm import initialize_generation_llm, initialize_validation_llm
-from generator.document_utils import get_logs, initialize_logging 
+from generator.document_utils import get_logs, initialize_logging
+from retriever.load_selected_datasets import load_selected_datasets 
 
 def launch_gradio(config : AppConfig):
     """
     Launch the Gradio app with pre-initialized objects.
     """
     initialize_logging()
+
+    # **🔹 Always get the latest loaded datasets**
+    config.detect_loaded_datasets()
 
     def update_logs_periodically():
         while True:
@@ -21,6 +24,10 @@ def launch_gradio(config : AppConfig):
 
     def answer_question(query, state):
         try:
+            # Ensure vector store is updated before use
+            if config.vector_store is None:
+                return "Please load a dataset first.", state
+            
             # Generate response using the passed objects
             response, source_docs = retrieve_and_generate_response(config.gen_llm, config.vector_store, query)
             
@@ -70,12 +77,14 @@ def launch_gradio(config : AppConfig):
         return get_updated_model_info()
 
     def get_updated_model_info():
+        loaded_datasets_str = ", ".join(config.loaded_datasets) if config.loaded_datasets else "None"
         """Generate and return the updated model information string."""
         return (
             f"Embedding Model: {ConfigConstants.EMBEDDING_MODEL_NAME}\n"
             f"Generation LLM: {config.gen_llm.name if hasattr(config.gen_llm, 'name') else 'Unknown'}\n"
             f"Re-ranking LLM: {ConfigConstants.RE_RANKER_MODEL_NAME}\n"
             f"Validation LLM: {config.val_llm.name if hasattr(config.val_llm, 'name') else 'Unknown'}\n"
+            f"Loaded Datasets: {loaded_datasets_str}\n"
         )
 
     # Wrappers for event listeners
@@ -100,6 +109,11 @@ def launch_gradio(config : AppConfig):
             """)
         # Model Configuration
         with gr.Accordion("System Information", open=False):
+            with gr.Accordion("DataSet", open=False):
+                with gr.Row():
+                    dataset_selector = gr.CheckboxGroup(ConfigConstants.DATA_SET_NAMES, label="Select Datasets to Load")
+                    load_button = gr.Button("Load", scale= 0)
+
             with gr.Row():
                 # Column for Generation Model Dropdown
                 with gr.Column(scale=1):
@@ -135,10 +149,10 @@ def launch_gradio(config : AppConfig):
         all_questions = [
             "When was the first case of COVID-19 identified?",
             "What are the ages of the patients in this study?",
-            "What is the Hepatitis C virus?",
+            "Is one party required to deposit its source code into escrow with a third party, which can be released to the counterparty upon the occurrence of certain events (bankruptcy,  insolvency, etc.)?",
             "Explain the concept of blockchain.",
             "What is the capital of France?",
-            "What are the symptoms of COVID-19?",
+            "Do Surface Porosity and Pore Size Influence Mechanical Properties and Cellular Response to PEEK??",
             "How does a vaccine work?",
             "What is the difference between RNA and DNA?",
             "What are the risk factors for heart disease?",
@@ -197,6 +211,8 @@ def launch_gradio(config : AppConfig):
         # State to store response and source documents
         state = gr.State(value={"query": "","response": "", "source_docs": {}})
 
+        # Pass config to update vector store
+        load_button.click(lambda datasets: (load_selected_datasets(datasets, config), get_updated_model_info()), inputs=dataset_selector)
         # Attach event listeners to update model info on change
         new_gen_llm_input.change(reinitialize_gen_llm, inputs=new_gen_llm_input, outputs=model_info_display)
         new_val_llm_input.change(reinitialize_val_llm, inputs=new_val_llm_input, outputs=model_info_display)
