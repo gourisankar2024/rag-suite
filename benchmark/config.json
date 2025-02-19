@@ -8,7 +8,7 @@
     "model_name":"llama3-8b-8192",
     "noise_rate": 0.4,
     "passage_num": 5,
-    "num_queries": 10,
+    "num_queries": 100,
     "retry_attempts": 3,
     "timeout_limit": 60,
     "UsePreCalculatedValue": true
