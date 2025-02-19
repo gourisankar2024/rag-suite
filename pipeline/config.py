@@ -3,7 +3,7 @@ import os
 
 class ConfigConstants:
     # Constants related to datasets and models
-    DATA_SET_PATH= '/persistent/local_datasets'
+    DATA_SET_PATH= '/persistent/'
     DATA_SET_NAMES = ['covidqa', 'cuad', 'techqa','delucionqa', 'emanual', 'expertqa', 'finqa', 'hagrid', 'hotpotqa', 'msmarco', 'pubmedqa', 'tatqa']
     EMBEDDING_MODEL_NAME = "sentence-transformers/paraphrase-MiniLM-L3-v2"
     RE_RANKER_MODEL_NAME = 'cross-encoder/ms-marco-electra-base'
@@ -25,7 +25,7 @@ class AppConfig:
     def detect_loaded_datasets():
         print('Calling detect_loaded_datasets')
         """Check which datasets are already stored locally."""
-        local_path = ConfigConstants.DATA_SET_PATH
+        local_path = ConfigConstants.DATA_SET_PATH + 'local_datasets'
         if not os.path.exists(local_path):
             return set()
         
