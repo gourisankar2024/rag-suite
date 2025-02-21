@@ -1,0 +1,9 @@
+{
+    "model": "mixtral-8x7b-32768",
+    "accuracy": 0.55,
+    "noise_rate": 0.8,
+    "correct_count": 55,
+    "total": 100,
+    "all_rate": 0.55,
+    "tt": 55
+}
