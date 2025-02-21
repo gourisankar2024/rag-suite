@@ -36,15 +36,39 @@ def process_data(instance, noise_rate, passage_num, filename, correct_rate=0):
     # Handling the '_fact' case in filename
     elif '_fact' in filename:
         correct_num = math.ceil(passage_num * correct_rate)
-        pos_num = passage_num - neg_num - correct_num
-        indexs = list(range(len(instance['positive'])))
-        selected = random.sample(indexs, min(len(indexs), pos_num))
-        docs = [instance['positive_wrong'][i] for i in selected]
-        remain = [i for i in indexs if i not in selected]
-        if correct_num > 0 and len(remain) > 0:
-            docs += [instance['positive'][i] for i in random.sample(remain, min(len(remain), correct_num))]
-        if neg_num > 0:
-            docs += instance['negative'][:neg_num]
+        # Adjust correct_num to not exceed passage_num - neg_num, excluding positive_wrong
+        if correct_rate == 1.0:
+            # For factual-only with noise, use only positive and negative documents
+            correct_num = min(correct_num, passage_num - neg_num)
+            pos_num = 0  # No positive_wrong documents when correct_rate = 1.0
+        else:
+            # For other correct_rate values, calculate pos_num for positive_wrong
+            pos_num = passage_num - neg_num - correct_num
+            if pos_num < 0:
+                pos_num = 0  # Ensure pos_num is not negative
+
+        # Select positive documents (factual) first
+        indexs_positive = list(range(len(instance['positive'])))
+        selected_positive = random.sample(indexs_positive, min(len(indexs_positive), correct_num))
+        docs = [instance['positive'][i] for i in selected_positive]
+
+        # Add negative documents (noise) if needed
+        if neg_num > 0 and 'negative' in instance:
+            docs += instance['negative'][:min(neg_num, len(instance['negative']))]
+
+        # Only add positive_wrong documents if pos_num > 0 and correct_rate < 1.0
+        if pos_num > 0 and correct_rate < 1.0:
+            indexs_positive_wrong = list(range(len(instance['positive_wrong'])))
+            selected_positive_wrong = random.sample(indexs_positive_wrong, min(len(indexs_positive_wrong), pos_num))
+            docs += [instance['positive_wrong'][i] for i in selected_positive_wrong]
+
+        # Ensure docs length does not exceed passage_num
+        if len(docs) > passage_num:
+            random.shuffle(docs)
+            docs = docs[:passage_num]
+        elif len(docs) < passage_num and 'negative' in instance:
+            remaining = passage_num - len(docs)
+            docs += instance['negative'][:min(remaining, len(instance['negative']))]
     
     # Default case (when filename doesn't match '_int' or '_fact')
     else:

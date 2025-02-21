@@ -9,7 +9,7 @@ from scripts.helper import ensure_directory_exists, load_dataset
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Improved function to evaluate noise robustness
-def get_factual_evaluation(config):
+def get_prediction_file(config, correct_rate = 0):
     result_path = config['result_path'] + 'Counterfactual Robustness/'
     noise_rate = config['noise_rate']
 
@@ -17,15 +17,16 @@ def get_factual_evaluation(config):
     filename = os.path.join(result_path, f"prediction_{config['output_file_extension']}.json")
     ensure_directory_exists(filename)
 
-    results = get_prediction_result(config, config['factual_file_name'], filename)  # Store results for this model
+    results = get_prediction_result(config, config['factual_file_name'], filename, correct_rate)  # Store results for this model
 
     # Save results to a file
     with open(filename, 'w', encoding='utf-8') as f:
         for result in results:
             f.write(json.dumps(result, ensure_ascii=False) + '\n')
-
+    
+    return filename
     # Compute per-model noise robustness
-    tt = sum(1 for i in results if (noise_rate == 1 and i['label'][0] == -1) or (0 not in i['label'] and 1 in i['label']))
+    '''tt = sum(1 for i in results if (noise_rate == 1 and i['label'][0] == -1) or (0 not in i['label'] and 1 in i['label']))
     scores = {
     'all_rate': (tt)/len(results),
     'noise_rate': noise_rate,
@@ -52,6 +53,6 @@ def get_factual_evaluation(config):
     #logging.info(f"score: {scores}")
     score_filename = os.path.join(result_path, f"scores_{config['output_file_extension']}.json")
     with open(score_filename, 'w') as f:
-        json.dump(scores, f, ensure_ascii=False, indent=4)
+        json.dump(scores, f, ensure_ascii=False, indent=4)'''
 
-    return filename
+  

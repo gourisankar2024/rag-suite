@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 # Get prediction from LLM based on different dataset
 
-def get_prediction_result(config, data_file_name, prediction_file_name=''):
+def get_prediction_result(config, data_file_name, prediction_file_name='', correct_rate = 0):
     results = []
     used_data = []
     dataset = load_dataset(data_file_name)
@@ -37,7 +37,7 @@ def get_prediction_result(config, data_file_name, prediction_file_name=''):
                 continue
         
         logging.info(f"Executing Query {idx + 1} for Model: {modelname}")
-        query, ans, docs = process_data(instance, config['noise_rate'], config['passage_num'], data_file_name)
+        query, ans, docs = process_data(instance, config['noise_rate'], config['passage_num'], data_file_name, correct_rate)
 
         # Retry mechanism for prediction
         for attempt in range(1, config['retry_attempts'] + 1):
