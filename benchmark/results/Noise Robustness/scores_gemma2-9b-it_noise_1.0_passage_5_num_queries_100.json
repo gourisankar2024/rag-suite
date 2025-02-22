@@ -1,0 +1,9 @@
+{
+    "model": "gemma2-9b-it",
+    "accuracy": 0.15,
+    "noise_rate": 1.0,
+    "correct_count": 15,
+    "total": 100,
+    "all_rate": 0.62,
+    "tt": 62
+}

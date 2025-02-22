@@ -1,0 +1,10 @@
+{
+    "reject_rate": 0.47,
+    "all_rate": 0.11,
+    "correct_rate": 0.19148936170212766,
+    "tt": 11,
+    "rejecttt": 47,
+    "correct_tt": 9,
+    "nums": 100,
+    "noise_rate": 0.0
+}
