@@ -36,7 +36,7 @@ def launch_gradio(config : AppConfig):
             state["response"] = response
             state["source_docs"] = source_docs
             
-            response_text = f"Response from Model : {response}\n\n"
+            response_text = f"Response from Model ({config.gen_llm.name}) : {response}\n\n"
             return response_text, state
         except Exception as e:
             logging.error(f"Error processing query: {e}")
@@ -147,16 +147,16 @@ def launch_gradio(config : AppConfig):
         # Query Section
         gr.Markdown("Ask a question and get a response with metrics calculated from the RAG pipeline.")
         all_questions = [
-            "When was the first case of COVID-19 identified?",
-            "What are the ages of the patients in this study?",
+            "Does the ignition button have multiple modes?",
+            "Why does the other instance of my multi-instance qmgr seem to hang after a failover? Queue manager will not start after failover.",
             "Is one party required to deposit its source code into escrow with a third party, which can be released to the counterparty upon the occurrence of certain events (bankruptcy,  insolvency, etc.)?",
             "Explain the concept of blockchain.",
             "What is the capital of France?",
             "Do Surface Porosity and Pore Size Influence Mechanical Properties and Cellular Response to PEEK??",
             "How does a vaccine work?",
-            "What is the difference between RNA and DNA?",
+            "Tell me the step-by-step instruction for front-door installation.",
             "What are the risk factors for heart disease?",
-            "What is the role of insulin in the body?",
+            "What is the % change in total property and equipment from 2018 to 2019?",
             # Add more questions as needed
         ]
 
@@ -164,9 +164,10 @@ def launch_gradio(config : AppConfig):
         example_questions = [
             "When was the first case of COVID-19 identified?",
             "What are the ages of the patients in this study?",
-            "What is the Hepatitis C virus?",
+            "Why cant I load and AEL when using IE 11 JRE 8 Application Blocked by Java Security",
             "Explain the concept of blockchain.",
-            "What is the capital of France?"
+            "What is the capital of France?",
+            "What was the change in Current deferred income?"
         ]  
         with gr.Row():
             with gr.Column():
@@ -212,7 +213,7 @@ def launch_gradio(config : AppConfig):
         state = gr.State(value={"query": "","response": "", "source_docs": {}})
 
         # Pass config to update vector store
-        load_button.click(lambda datasets: (load_selected_datasets(datasets, config), get_updated_model_info()), inputs=dataset_selector)
+        load_button.click(lambda datasets: (load_selected_datasets(datasets, config), get_updated_model_info()), inputs=dataset_selector, outputs=model_info_display)
         # Attach event listeners to update model info on change
         new_gen_llm_input.change(reinitialize_gen_llm, inputs=new_gen_llm_input, outputs=model_info_display)
         new_val_llm_input.change(reinitialize_val_llm, inputs=new_val_llm_input, outputs=model_info_display)
@@ -238,5 +239,6 @@ def launch_gradio(config : AppConfig):
         # Update UI when logs_state changes
         interface.queue() 
         interface.load(update_logs_periodically, outputs=log_section)
+        interface.load(get_updated_model_info, outputs=model_info_display)
 
     interface.launch()

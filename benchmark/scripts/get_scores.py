@@ -65,7 +65,7 @@ def load_negative_rejection_scores(config):
         return pd.DataFrame()
 
     if not os.path.exists(Negative_Rejection_DIR):
-        return pd.DataFrame(columns=["Model", "Rejection Rate"])
+        return pd.DataFrame(columns=["Model", "Rejection Rate %"])
 
     score_data = {}
 
@@ -80,44 +80,47 @@ def load_negative_rejection_scores(config):
             with open(filepath, "r") as f:
                 score = json.load(f)
                 reject_rate = score.get("reject_rate", "N/A")
-                score_data[model] = f"{reject_rate * 100:.2f}%" if reject_rate != "N/A" else "N/A"
+                score_data[model] = f"{reject_rate * 100}" if reject_rate != "N/A" else "N/A"
         else:
             score_data[model] = "N/A"
 
     # Convert to DataFrame
     df = pd.DataFrame([
-        {"Model": model, "Rejection Rate": score_data[model]}
+        {"Model": model, "Rejection Rate %": score_data[model]}
         for model in config["models"]
     ])
 
     return df
 
 def load_counterfactual_robustness_scores(config):
-    #hard code noise rate to 0.4
-    config['noise_rate'] = 0.4
+    """Load and format counterfactual robustness scores into a table with proper formatting."""
+    config['noise_rate'] = 0.4  # Hardcode noise rate
+
     if not os.path.exists(Counterfactual_Robustness_DIR):
-        return pd.DataFrame(columns=["Model", "Accuracy with factual docs (%)", "Error Detection Rate", "Correction Rate (%)"])
+        return pd.DataFrame(columns=["Model", "Accuracy (%)", "Acc_doc (%)", "Error Detection Rate (%)", "Correction Rate (%)"])
 
     score_data = {}
 
-    # Iterate over each model in config['models']
     for model in config["models"]:  
-        # Expected filename pattern for each model
         expected_filename = f"scores_{model}_noise_{config['noise_rate']}_passage_{config['passage_num']}_num_queries_{config['num_queries']}.json"
         filepath = os.path.join(Counterfactual_Robustness_DIR, expected_filename)
 
-        # Check if file exists
         if os.path.exists(filepath):
             with open(filepath, "r") as f:
-                score = json.load(f)
+                scores_json = json.load(f)  # Read the full JSON content
+                factual_score = next((s for s in scores_json["conditions"] if s["condition_label"] == "factual_only"), {})
+                counterfactual_score = next((s for s in scores_json["conditions"] if s["condition_label"] == "counterfactual"), {})
+
                 score_data[model] = {
-                    "Accuracy with factual docs (%)": round(score.get("all_rate", 0) * 100, 2),  # No decimal
-                    "Error Detection Rate (%)": round(score.get("reject_rate", 0) * 100, 2), 
-                    "Correction Rate (%)": round(score.get("correct_rate", 0) * 100, 2)  # 2 decimal places
+                    "Accuracy (%)": int(round(factual_score.get("all_rate", 0) * 100)) if factual_score else "N/A",
+                    "Acc_doc (%)": int(round(counterfactual_score.get("all_rate", 0) * 100)) if counterfactual_score else "N/A",
+                    "Error Detection Rate (%)": int(round(counterfactual_score.get("reject_rate", 0) * 100)) if counterfactual_score else "N/A",
+                    "Correction Rate (%)": round(counterfactual_score.get("correct_rate", 0) * 100, 2) if counterfactual_score else "N/A"
                 }
         else:
-            score_data[model] = {  # Populate with "N/A" if file not found
-                "Accuracy with factual docs (%)": "N/A",
+            score_data[model] = {
+                "Accuracy (%)": "N/A",
+                "Acc_doc (%)": "N/A",
                 "Error Detection Rate (%)": "N/A",
                 "Correction Rate (%)": "N/A"
             }
@@ -126,8 +129,9 @@ def load_counterfactual_robustness_scores(config):
     df = pd.DataFrame([
         {
             "Model": model,
-            "Accuracy with factual docs (%)": f"{score_data[model]['Accuracy with factual docs (%)']:.2f}" if score_data[model]["Accuracy with factual docs (%)"] != "N/A" else "N/A",
-            "Error Detection Rate": f"{score_data[model]['Error Detection Rate (%)']:.2f}" if score_data[model]["Error Detection Rate (%)"] != "N/A" else "N/A",
+            "Accuracy (%)": f"{score_data[model]['Accuracy (%)']}" if score_data[model]["Accuracy (%)"] != "N/A" else "N/A",
+            "Acc_doc (%)": f"{score_data[model]['Acc_doc (%)']}" if score_data[model]["Acc_doc (%)"] != "N/A" else "N/A",
+            "Error Detection Rate (%)": f"{score_data[model]['Error Detection Rate (%)']}" if score_data[model]["Error Detection Rate (%)"] != "N/A" else "N/A",
             "Correction Rate (%)": f"{score_data[model]['Correction Rate (%)']:.2f}" if score_data[model]["Correction Rate (%)"] != "N/A" else "N/A"
         }
         for model in config["models"]

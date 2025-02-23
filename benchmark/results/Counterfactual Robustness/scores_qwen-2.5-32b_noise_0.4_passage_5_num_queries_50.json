@@ -1,10 +1,26 @@
 {
-    "reject_rate": 0.64,
-    "all_rate": 0.52,
-    "correct_rate": 0.8125,
-    "tt": 26,
-    "rejecttt": 32,
-    "correct_tt": 26,
-    "nums": 50,
-    "noise_rate": 0.4
+    "conditions": [
+        {
+            "reject_rate": 0.2,
+            "all_rate": 1.0,
+            "correct_rate": 1.0,
+            "tt": 50,
+            "rejecttt": 10,
+            "correct_tt": 10,
+            "nums": 50,
+            "noise_rate": 0.2,
+            "condition_label": "factual_only"
+        },
+        {
+            "reject_rate": 0.68,
+            "all_rate": 0.44,
+            "correct_rate": 0.6176470588235294,
+            "tt": 22,
+            "rejecttt": 34,
+            "correct_tt": 21,
+            "nums": 50,
+            "noise_rate": 0.4,
+            "condition_label": "counterfactual"
+        }
+    ]
 }
