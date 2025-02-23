@@ -1,0 +1,26 @@
+{
+    "conditions": [
+        {
+            "reject_rate": 0.29,
+            "all_rate": 0.98,
+            "correct_rate": 1.0,
+            "tt": 98,
+            "rejecttt": 29,
+            "correct_tt": 29,
+            "nums": 100,
+            "noise_rate": 0.2,
+            "condition_label": "factual_only"
+        },
+        {
+            "reject_rate": 0.54,
+            "all_rate": 0.75,
+            "correct_rate": 0.8333333333333334,
+            "tt": 75,
+            "rejecttt": 54,
+            "correct_tt": 45,
+            "nums": 100,
+            "noise_rate": 0.4,
+            "condition_label": "counterfactual"
+        }
+    ]
+}
