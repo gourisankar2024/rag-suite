@@ -1,4 +1,12 @@
+import os
 import gradio as gr
+from data.document_loader import DocumentLoader
+from data.pdf_reader import PDFReader
+
+# Initialize the document loader and PDF reader
+doc_loader = DocumentLoader()
+pdf_reader = PDFReader()
+uploaded_documents = {}
 
 def chat_response(query, document, history):
     new_response = f"User: {query}\nLLM: Response from LLM for document: {document}\n"
@@ -8,9 +16,43 @@ def load_sample_question(question):
     return question
 
 def clear_selection():
-    return None
+    return [], "", []  # Reset doc_selector to empty list
 
-documents = [f"Document {i}" for i in range(1, 101)]  # Mock list of documents
+def process_uploaded_file(file, current_selection):
+    """Process uploaded PDF and update document list"""
+    global uploaded_documents
+    try:
+        if file is None:
+            return "No file uploaded", [], gr.update(choices=list(uploaded_documents.keys()), value=current_selection)
+        
+        # Load and validate file
+        file_path = doc_loader.load_file(file.name)
+        
+        # Read PDF content
+        page_list = pdf_reader.read_pdf(file_path)
+        
+        # Add to uploaded documents
+        filename = os.path.basename(file_path)
+        uploaded_documents[filename] = file_path
+        
+        # Update current selection to include new file if not already present
+        updated_selection = current_selection if current_selection else []
+        if filename not in updated_selection:
+            updated_selection.append(filename)
+        
+        return (
+            f"Successfully loaded {filename} with {len(page_list)} pages",
+            page_list,
+            gr.update(choices=list(uploaded_documents.keys()), value=updated_selection)
+        )
+        
+    except Exception as e:
+        return f"Error: {str(e)}", [], gr.update(choices=list(uploaded_documents.keys()), value=current_selection)
+
+def update_doc_selector(selected_docs):
+    """Keep selected documents in sync"""
+    return selected_docs    
+
 models = ["gemma2-9b-it","llama-guard-3-8b", "qwen-2.5-32b", "mixtral-8x7b-32768"]
 example_questions = [
             "Can you give me summary of the document?",
@@ -40,22 +82,42 @@ with gr.Blocks() as interface:
             **AI Document Explorer** allows you to upload PDF documents and interact with them using AI-powered analysis and summarization. Ask questions, extract key insights, and gain a deeper understanding of your documents effortlessly.
             """)
     with gr.Row():
-        # Left Sidebar
+         # Left Sidebar
         with gr.Column(scale=2):
-            gr.Markdown("## Select Document")
-            upload_btn = gr.File(label="Upload Document")
-            doc_selector = gr.Dropdown(choices=documents, label="Documents", multiselect=True , info="Select one or more document(s) for analysis.")
-            model_selector = gr.Dropdown(choices= models, label="Models", interactive=True, info="Select a model for response generation.")
+            gr.Markdown("## Upload and Select Document")
+            upload_btn = gr.File(label="Upload PDF Document", file_types=[".pdf"])
+            doc_selector = gr.Dropdown(
+                choices=list(uploaded_documents.keys()),
+                label="Documents",
+                multiselect=True,
+                value=[]  # Initial value as empty list
+            )
+            model_selector = gr.Dropdown(choices=models, label="Models", interactive=True)
             clear_btn = gr.Button("Clear Selection")
-            clear_btn.click(clear_selection, outputs=doc_selector)
+            upload_status = gr.Textbox(label="Upload Status", interactive=False)
+            
+            # Process uploaded file and update UI
+            upload_btn.change(
+                    process_uploaded_file,
+                    inputs=[upload_btn, doc_selector],
+                    outputs=[
+                        upload_status,
+                        gr.State(),  # page_list
+                        doc_selector  # Update choices and value together
+                    ]
+                )
+            clear_btn.click(
+                clear_selection,
+                outputs=[doc_selector, upload_status, gr.State()]
+            )
 
         # Middle Section (Chat & LLM Response)
         with gr.Column(scale=5):
             gr.Markdown("## Chat with document(s)")
             chat_history = gr.Textbox(label="Chat History", interactive=False, lines=20, elem_id="chat-history")
             with gr.Row():
-                chat_input = gr.Textbox(label="Ask additional questions about the document...", show_label=False, placeholder="Ask additional questions about the document...", elem_id="chat-input", lines= 3)
-                chat_btn = gr.Button("🚀 Send", variant="primary", elem_id="send-button", scale= 0)
+                chat_input = gr.Textbox(label="Ask additional questions about the document...", show_label=False, placeholder="Ask additional questions about the document...", elem_id="chat-input", lines=3)
+                chat_btn = gr.Button("🚀 Send", variant="primary", elem_id="send-button", scale=0)
             chat_btn.click(chat_response, inputs=[chat_input, doc_selector, chat_history], outputs=chat_history)
 
         # Right Sidebar (Sample Questions & History)
