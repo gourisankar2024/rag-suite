@@ -1,12 +1,22 @@
+import logging
 import os
+import uuid
 import gradio as gr
+from reteriver.chunk_documents import chunk_documents
 from data.document_loader import DocumentLoader
 from data.pdf_reader import PDFReader
+from reteriver.vector_store_manager import VectorStoreManager
 
 # Initialize the document loader and PDF reader
 doc_loader = DocumentLoader()
 pdf_reader = PDFReader()
+vector_manager = VectorStoreManager()
 uploaded_documents = {}
+chunked_documents = {}  # Store chunks for each document
+document_ids = {}  # Store doc_id: filename pairs
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def chat_response(query, document, history):
     new_response = f"User: {query}\nLLM: Response from LLM for document: {document}\n"
@@ -20,11 +30,13 @@ def clear_selection():
 
 def process_uploaded_file(file, current_selection):
     """Process uploaded PDF and update document list"""
-    global uploaded_documents
+    global uploaded_documents, chunked_documents, document_ids
     try:
         if file is None:
             return "No file uploaded", [], gr.update(choices=list(uploaded_documents.keys()), value=current_selection)
         
+        logging.info(f"Uploading file")
+
         # Load and validate file
         file_path = doc_loader.load_file(file.name)
         
@@ -35,6 +47,17 @@ def process_uploaded_file(file, current_selection):
         filename = os.path.basename(file_path)
         uploaded_documents[filename] = file_path
         
+        # Generate a unique document ID
+        doc_id = str(uuid.uuid4())
+        document_ids[filename] = doc_id
+        
+        # Chunk the pages with the document ID
+        chunks = chunk_documents(page_list, doc_id, chunk_size=1000, chunk_overlap=200)
+        chunked_documents[filename] = chunks  # Store chunks for later use
+        
+         # Add chunks to vector store
+        #vector_manager.add_documents(chunks)
+
         # Update current selection to include new file if not already present
         updated_selection = current_selection if current_selection else []
         if filename not in updated_selection:
@@ -78,7 +101,7 @@ all_questions = [
 with gr.Blocks() as interface:
     interface.title = "🤖 IntelliDoc: AI Document Explorer"
     gr.Markdown("""
-            # IntelliDoc: AI Document Explorer
+            # 🤖 IntelliDoc: AI Document Explorer
             **AI Document Explorer** allows you to upload PDF documents and interact with them using AI-powered analysis and summarization. Ask questions, extract key insights, and gain a deeper understanding of your documents effortlessly.
             """)
     with gr.Row():
@@ -136,7 +159,7 @@ with gr.Blocks() as interface:
                     info="Choose a question from the dropdown to populate the query box."
                 )
             
-            gr.Markdown("## Query History")
+            gr.Markdown("## Logs")
             history = gr.Textbox(label="Previous Queries", interactive=False)
     
     gr.HTML("""
