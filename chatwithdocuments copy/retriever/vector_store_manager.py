@@ -1,6 +1,6 @@
 import os
 import logging
-from reteriver.config import ConfigConstants
+from config.config import ConfigConstants
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 
@@ -70,15 +70,21 @@ class VectorStoreManager:
         if not self.vector_store:
             return []
 
-        # Define a filter function to match doc_id
-        filter_fn = lambda metadata: metadata['doc_id'] == doc_id
+        try:
+
+            # Define a filter function to match doc_id
+            filter_fn = lambda metadata: metadata['doc_id'] == doc_id
+            
+            # Perform similarity search with filter
+            results = self.vector_store.similarity_search_with_score(
+                query=query,
+                k=k,
+                filter=filter_fn
+            )
+            
+            # Format results
+            return [{'text': doc.page_content, 'metadata': doc.metadata, 'score': score} for doc, score in results]
         
-        # Perform similarity search with filter
-        results = self.vector_store.similarity_search_with_score(
-            query=query,
-            k=k,
-            filter=filter_fn
-        )
-        
-        # Format results
-        return [{'text': doc.page_content, 'metadata': doc.metadata, 'score': score} for doc, score in results]
+        except Exception as e:
+            logging.error(f"Error during vector store search: {str(e)}")
+            return []
