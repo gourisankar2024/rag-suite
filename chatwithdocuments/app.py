@@ -35,25 +35,24 @@ def update_doc_selector(selected_docs):
     return selected_docs
 
 # UI Configuration
-models = ["gemma2-9b-it", "llama-guard-3-8b", "qwen-2.5-32b", "mistral-saba-24b"]
+models = ["qwen-2.5-32b", "gemma2-9b-it"]
 example_questions = [
-    "Can you give me summary of the document?",
-    "Key insights found in the document?",
-    "What are the risks outlined in the document?",
-    "Explain the concept of Executive Compensation.",
-    "Please give me more detailed summary of the document?",
+    "What is communication server?",
+    "Show me an example of a configuration file.",
+    "How to create Protected File Directories ?",
+    "What are the attributes Azureblobstorage?",
+    "What is Mediator help?",
+    "Why AzureBlobStorage port is used?"
 ]
 all_questions = [
-    "Does the ignition button have multiple modes?",
+    "Can you explain Communication Server architecture?",
     "Why does the other instance of my multi-instance qmgr seem to hang after a failover? Queue manager will not start after failover.",
-    "Is one party required to deposit its source code into escrow with a third party, which can be released to the counterparty upon the occurrence of certain events (bankruptcy, insolvency, etc.)?",
     "Explain the concept of blockchain.",
     "What is the capital of France?",
     "Do Surface Porosity and Pore Size Influence Mechanical Properties and Cellular Response to PEEK?",
     "How does a vaccine work?",
     "Tell me the step-by-step instruction for front-door installation.",
     "What are the risk factors for heart disease?",
-    "What is the % change in total property and equipment from 2018 to 2019?",
 ]
 
 with gr.Blocks() as interface:
@@ -99,9 +98,9 @@ with gr.Blocks() as interface:
             )
 
         # Middle Section (Chat & LLM Response)
-        with gr.Column(scale=5):
+        with gr.Column(scale=6):
             gr.Markdown("## Chat with document(s)")
-            chat_history = gr.Textbox(label="Chat History", interactive=False, lines=20, elem_id="chat-history")
+            chat_history = gr.Textbox(label="Chat History", interactive=False, lines=28, elem_id="chat-history", elem_classes=["chat-box"])
             with gr.Row():
                 chat_input = gr.Textbox(label="Ask additional questions about the document...", show_label=False, placeholder="Ask additional questions about the document...", elem_id="chat-input", lines=3)
                 chat_btn = gr.Button("🚀 Send", variant="primary", elem_id="send-button", scale=0)
@@ -111,7 +110,7 @@ with gr.Blocks() as interface:
             )
 
         # Right Sidebar (Sample Questions & History)
-        with gr.Column(scale=3):
+        with gr.Column(scale=2):
             gr.Markdown("## Frequently asked questions:")
             with gr.Column():
                 gr.Examples(
@@ -119,21 +118,23 @@ with gr.Blocks() as interface:
                     inputs=chat_input,
                     label=""
                 )
-                question_dropdown = gr.Dropdown(
+                '''question_dropdown = gr.Dropdown(
                     label="",
                     choices=all_questions,
                     interactive=True,
                     info="Choose a question from the dropdown to populate the query box."
-                )
+                )'''
 
-            gr.Markdown("## Logs")
-            history = gr.Textbox(label="Previous Queries", interactive=False)
+            #gr.Markdown("## Logs")
+            #history = gr.Textbox(label="Previous Queries", interactive=False)
 
     gr.HTML("""
     <style>
-    #chat-history textarea {
-        max-height: 500px !important;
+    .chat-box textarea {
+        max-height: 600px !important;
         overflow-y: auto !important;
+        resize: vertical;
+        white-space: pre-wrap;  /* Keeps formatting */
     }
     </style>
     """)
