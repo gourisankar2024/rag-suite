@@ -26,13 +26,15 @@ class VectorStoreManager:
                 allow_dangerous_deserialization=True
             )
         else:
-            logging.info("Creating new vector store")
+            '''logging.info("Creating new vector store")
             # Return an empty vector store; it will be populated when documents are added
             return FAISS.from_texts(
                 texts=[""],  # Dummy text to initialize
                 embedding=self.embedding_model,
                 metadatas=[{"source": "init", "doc_id": "init"}]
-            )
+            )'''
+            logging.info("Creating new vector store (unpopulated)")
+            return None 
 
     def add_documents(self, documents):
         """
@@ -48,10 +50,16 @@ class VectorStoreManager:
         metadatas = [{'source': doc['source'], 'doc_id': doc['doc_id']} for doc in documents]
 
         logging.info("Adding new documents to vector store")
-        self.vector_store.add_texts(
-            texts=texts,
-            metadatas=metadatas
-        )
+        
+        if not self.vector_store:
+            self.vector_store = FAISS.from_texts(
+                texts=texts,
+                embedding=self.embedding_model,
+                metadatas=metadatas
+            )
+        else:
+            self.vector_store.add_texts(texts=texts, metadatas=metadatas)
+
         self.vector_store.save_local(self.embedding_path)
         logging.info(f"Vector store updated and saved to {self.embedding_path}")
 
@@ -71,7 +79,7 @@ class VectorStoreManager:
             return []
 
         try:
-
+            query = " ".join(query.lower().split())
             # Define a filter function to match doc_id
             filter_fn = lambda metadata: metadata['doc_id'] == doc_id
             

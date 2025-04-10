@@ -109,7 +109,7 @@ class LLMManager:
             result = qa_chain.invoke({"query": question})
             response = result['result']
             source_docs = result['source_documents']
-            logging.info(f"Generated response for question: {question} : {response}")
+            #logging.info(f"Generated response for question: {question} : {response}")
             return response, source_docs
         except Exception as e:
             logging.error(f"Error during QA chain invocation: {str(e)}")

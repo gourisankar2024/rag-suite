@@ -55,7 +55,34 @@ all_questions = [
     "What are the risk factors for heart disease?",
 ]
 
-with gr.Blocks() as interface:
+with gr.Blocks(css="""
+        .chatbot .user {
+            position: relative;
+            background-color: #cfdcfd;
+            padding: 12px 16px;
+            border-radius: 20px;
+            border-bottom-right-radius: 6px;
+            display: inline-block;
+            max-width: 80%;
+            margin: 8px 0;
+        }
+
+        /* Tail effect */
+        .chatbot .user::after {
+            content: "";
+            position: absolute;
+            right: -10px;
+            bottom: 10px;
+            width: 0;
+            height: 0;
+            border: 10px solid transparent;
+            border-left-color: #cfdcfd;
+            border-right: 0;
+            border-top: 0;
+            margin-top: -5px;
+        }
+        .chatbot .bot { background-color: #f1f8e9; padding: 8px; border-radius: 10px; }   /* Light green for bot responses */
+    """) as interface:
     interface.title = "🤖 IntelliDoc: AI Document Explorer"
     gr.Markdown("""
         # 🤖 IntelliDoc: AI Document Explorer
@@ -100,7 +127,7 @@ with gr.Blocks() as interface:
         # Middle Section (Chat & LLM Response)
         with gr.Column(scale=6):
             gr.Markdown("## Chat with document(s)")
-            chat_history = gr.Textbox(label="Chat History", interactive=False, lines=28, elem_id="chat-history", elem_classes=["chat-box"])
+            chat_history = gr.Chatbot(label="Chat History", height= 650, bubble_full_width= False, type="messages")
             with gr.Row():
                 chat_input = gr.Textbox(label="Ask additional questions about the document...", show_label=False, placeholder="Ask additional questions about the document...", elem_id="chat-input", lines=3)
                 chat_btn = gr.Button("🚀 Send", variant="primary", elem_id="send-button", scale=0)
@@ -128,16 +155,6 @@ with gr.Blocks() as interface:
             #gr.Markdown("## Logs")
             #history = gr.Textbox(label="Previous Queries", interactive=False)
 
-    gr.HTML("""
-    <style>
-    .chat-box textarea {
-        max-height: 600px !important;
-        overflow-y: auto !important;
-        resize: vertical;
-        white-space: pre-wrap;  /* Keeps formatting */
-    }
-    </style>
-    """)
 
 if __name__ == "__main__":
     interface.launch()

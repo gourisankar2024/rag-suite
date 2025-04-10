@@ -43,7 +43,7 @@ class DocumentManager:
             self.document_ids[filename] = doc_id
 
             # Chunk the pages
-            chunks = chunk_documents(page_list, doc_id, chunk_size=1000, chunk_overlap=200)
+            chunks = chunk_documents(page_list, doc_id, chunk_size=2000, chunk_overlap=300)
             self.chunked_documents[filename] = chunks
 
             # Add chunks to vector store
@@ -104,10 +104,11 @@ class DocumentManager:
         top_k_results = all_results[:k]
 
         # Log the list of retrieved documents
-        logging.info("Retrieved top K documents:")
+        logging.info(f"Result from search :{all_results} ")
+        logging.info(f"Retrieved top {k} documents:")
         for i, result in enumerate(top_k_results, 1):
             doc_id = result['metadata'].get('doc_id', 'Unknown')
             filename = next((name for name, d_id in self.document_ids.items() if d_id == doc_id), 'Unknown')
-            logging.info(f"{i}. Filename: {filename}, Doc ID: {doc_id}, Score: {result['score']:.4f}, Text: {result['text'][:100]}...")
+            logging.info(f"{i}. Filename: {filename}, Doc ID: {doc_id}, Score: {result['score']:.4f}, Text: {result['text'][:200]}...")
 
         return top_k_results
