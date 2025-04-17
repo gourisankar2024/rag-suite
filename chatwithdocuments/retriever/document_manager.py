@@ -24,7 +24,7 @@ class DocumentManager:
         """
         try:
             if file is None:
-                return "No file uploaded", [], None, None
+                return "No file uploaded", None, None
 
             logging.info(f"Processing file: {file}")
 
@@ -51,7 +51,6 @@ class DocumentManager:
 
             return (
                 f"Successfully loaded {filename} with {len(page_list)} pages",
-                page_list,
                 filename,
                 doc_id
             )
@@ -104,11 +103,19 @@ class DocumentManager:
         top_k_results = all_results[:k]
 
         # Log the list of retrieved documents
-        logging.info(f"Result from search :{all_results} ")
+        #logging.info(f"Result from search :{all_results} ")
         logging.info(f"Retrieved top {k} documents:")
         for i, result in enumerate(top_k_results, 1):
             doc_id = result['metadata'].get('doc_id', 'Unknown')
             filename = next((name for name, d_id in self.document_ids.items() if d_id == doc_id), 'Unknown')
             logging.info(f"{i}. Filename: {filename}, Doc ID: {doc_id}, Score: {result['score']:.4f}, Text: {result['text'][:200]}...")
 
+        return top_k_results
+    
+    def retrieve_summary_chunks(self, query: str, doc_id : str, k: int = 10):
+        logging.info(f"Retrieving {k} chunks for summary: {query}, Document Id: {doc_id}")
+        results = self.vector_manager.search(query, doc_id, k=k)
+        top_k_results = results[:k]
+        logging.info(f"Retrieved {len(top_k_results)} chunks for summary")
+        
         return top_k_results

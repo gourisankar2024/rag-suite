@@ -63,7 +63,7 @@ class VectorStoreManager:
         self.vector_store.save_local(self.embedding_path)
         logging.info(f"Vector store updated and saved to {self.embedding_path}")
 
-    def search(self, query, doc_id, k=4):
+    def search(self, query, doc_id, k=10):
         """
         Search the vector store for relevant chunks, filtered by doc_id.
         
